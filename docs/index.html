@@ -2,41 +2,36 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>TCG Prototype – Simple</title>
-    <link rel="stylesheet" href="css/layout.css" />
+    <title>TCG Simple</title>
+    <style>
+      .zone {
+        width: 300px;
+        height: 200px;
+        border: 2px solid #444;
+        margin: 20px;
+        padding: 10px;
+        position: relative;
+      }
+      .card {
+        width: 60px;
+        height: 90px;
+        border: 2px solid #333;
+        border-radius: 6px;
+        background: gray;
+        position: absolute;
+      }
+      #hand .card {
+        background: blue;
+      }
+    </style>
   </head>
 
   <body>
-    <h2>TCG Prototype – Simple</h2>
+    <h2>TCG Simple</h2>
 
-    <div id="my-area" class="player-area">
-      <div class="row">
-        <div id="my-yellow" class="zone life">イエロー</div>
-        <div id="my-field" class="zone field">フィールド</div>
-        <div id="my-territory" class="zone territory">テリトリー</div>
-      </div>
+    <div id="deck" class="zone">山札</div>
+    <div id="hand" class="zone">手札</div>
 
-      <div class="row">
-        <div id="my-red" class="zone life">レッド</div>
-        <div class="zone field filler"></div>
-        <div id="my-deck" class="zone deck">
-          山札
-          <div class="deck-count" id="my-deck-count">0</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div id="my-remove" class="zone remove">リムーブ</div>
-        <div id="my-energy" class="zone energy">エナジー</div>
-        <div id="my-drop" class="zone drop">ドロップ</div>
-      </div>
-
-      <div class="row">
-        <div id="my-hand" class="zone hand">手札</div>
-      </div>
-    </div>
-
-    <!-- Socket.io は一旦使わないので削除 -->
-    <script src="js/main.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>
