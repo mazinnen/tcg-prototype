@@ -1,79 +1,83 @@
 const socket = io("https://tcg-prototype.onrender.com");
 
-const card = document.getElementById("card");
-let isDragging = false;
-
-card.addEventListener("mousedown", () => (isDragging = true));
-document.addEventListener("mouseup", () => (isDragging = false));
-
-document.addEventListener("mousemove", (e) => {
-  if (!isDragging) return;
-
-  const pos = { x: e.clientX - 50, y: e.clientY - 75 };
-  card.style.left = pos.x + "px";
-  card.style.top = pos.y + "px";
-
-  socket.emit("move_card", pos);
-});
-
-socket.on("move_card", (pos) => {
-  card.style.left = pos.x + "px";
-  card.style.top = pos.y + "px";
-});
-
+let cards = {
+  c1: { id: "c1", zone: "hand", x: 10, y: 10 },
+  c2: { id: "c2", zone: "hand", x: 100, y: 10 },
+  c3: { id: "c3", zone: "deck", x: 0, y: 0 }
+};
 
 const zones = document.querySelectorAll(".zone");
-const card = document.getElementById("card");
 
-let isDragging = false;
-let offsetX = 0;
-let offsetY = 0;
+// カードDOM生成
+Object.values(cards).forEach((card) => {
+  const el = document.createElement("div");
+  el.className = "card";
+  el.id = card.id;
+  el.textContent = card.id.toUpperCase();
 
-card.addEventListener("mousedown", (e) => {
-  isDragging = true;
-  offsetX = e.offsetX;
-  offsetY = e.offsetY;
+  const zone = document.getElementById(card.zone);
+  zone.appendChild(el);
+
+  el.style.left = card.x + "px";
+  el.style.top = card.y + "px";
+
+  enableDrag(el);
 });
 
-document.addEventListener("mouseup", (e) => {
-  if (!isDragging) return;
-  isDragging = false;
+function enableDrag(el) {
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
 
-  // ドロップ先のゾーンを判定
-  zones.forEach((zone) => {
-    const rect = zone.getBoundingClientRect();
-    if (
-      e.clientX > rect.left &&
-      e.clientX < rect.right &&
-      e.clientY > rect.top &&
-      e.clientY < rect.bottom
-    ) {
-      // ゾーンに移動
-      zone.appendChild(card);
-      card.style.position = "absolute";
-      card.style.left = e.clientX - rect.left - offsetX + "px";
-      card.style.top = e.clientY - rect.top - offsetY + "px";
-
-      socket.emit("move_card", {
-        zone: zone.id,
-        x: card.style.left,
-        y: card.style.top
-      });
-    }
+  el.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
   });
-});
 
-document.addEventListener("mousemove", (e) => {
-  if (!isDragging) return;
+  document.addEventListener("mouseup", (e) => {
+    if (!isDragging) return;
+    isDragging = false;
 
-  card.style.left = e.clientX - offsetX + "px";
-  card.style.top = e.clientY - offsetY + "px";
-});
+    zones.forEach((zone) => {
+      const rect = zone.getBoundingClientRect();
+      if (
+        e.clientX > rect.left &&
+        e.clientX < rect.right &&
+        e.clientY > rect.top &&
+        e.clientY < rect.bottom
+      ) {
+        zone.appendChild(el);
 
-// 相手側の更新
+        const x = e.clientX - rect.left - offsetX;
+        const y = e.clientY - rect.top - offsetY;
+
+        el.style.left = x + "px";
+        el.style.top = y + "px";
+
+        socket.emit("move_card", {
+          id: el.id,
+          zone: zone.id,
+          x,
+          y
+        });
+      }
+    });
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    el.style.left = e.clientX - offsetX + "px";
+    el.style.top = e.clientY - offsetY + "px";
+  });
+}
+
+// 相手側の同期
 socket.on("move_card", (data) => {
+  const el = document.getElementById(data.id);
   const zone = document.getElementById(data.zone);
-  zone.appendChild(card);
-  card.style.left = data.x;
-  card.style.top = data.y;
+
+  zone.appendChild(el);
+  el.style.left = data.x + "px";
+  el.style.top = data.y + "px";
 });

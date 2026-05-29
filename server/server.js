@@ -16,9 +16,10 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("connected:", socket.id);
 
-  socket.on("move_card", (pos) => {
-    socket.broadcast.emit("move_card", pos);
+  socket.on("move_card", (data) => {
+    socket.broadcast.emit("move_card", data);
   });
 });
 
-server.listen(10000, () => console.log("server running"));
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, () => console.log("server running on " + PORT));

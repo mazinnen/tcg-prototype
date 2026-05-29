@@ -1,0 +1,50 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+logs/
+*.log
+*.log.*
+log.txt
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv environment variables
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+.cache/
+.tmp/
+
+# VSCode / Codespaces
+.vscode/
+.history/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python (for local http.server)
+__pycache__/
+*.pyc
+
+# GitHub Pages cache
+docs/.cache/
+docs/.parcel-cache/
+
+# Codespaces specific
+.gitpod/
+.devcontainer/
