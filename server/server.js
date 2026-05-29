@@ -11,11 +11,7 @@ const io = new Server(server, {
   cors: { origin: "*" }
 });
 const io = new Server(server, {
-  cors: {
-    origin: [
-      "https://mazinnen.github.io",
-    ]
-  }
+  cors: { origin: "*" }
 });
 
 io.on("connection", (socket) => {
