@@ -2,40 +2,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>TCG Prototype</title>
+    <title>TCG Prototype – Simple</title>
     <link rel="stylesheet" href="css/layout.css" />
   </head>
 
   <body>
-    <h2>TCG Prototype</h2>
+    <h2>TCG Prototype – Simple</h2>
 
-    <!-- 相手側 -->
-    <div id="opponent-area" class="player-area opponent">
-      <div class="row">
-        <div id="op-yellow" class="zone life">相手イエロー</div>
-        <div id="op-field" class="zone field">相手フィールド</div>
-        <div id="op-territory" class="zone territory">相手テリトリー</div>
-      </div>
-
-      <div class="row">
-        <div id="op-red" class="zone life">相手レッド</div>
-        <div class="zone field filler"></div>
-        <div id="op-deck" class="zone deck">
-          相手山札
-          <div class="deck-count" id="op-deck-count">0</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div id="op-remove" class="zone remove">相手リムーブ</div>
-        <div id="op-energy" class="zone energy">相手エナジー</div>
-        <div id="op-drop" class="zone drop">相手ドロップ</div>
-      </div>
-    </div>
-
-    <hr />
-
-    <!-- 自分側 -->
     <div id="my-area" class="player-area">
       <div class="row">
         <div id="my-yellow" class="zone life">イエロー</div>
@@ -63,10 +36,7 @@
       </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="js/cards.js"></script>
-    <script src="js/layout.js"></script>
-    <script src="js/drag.js"></script>
+    <!-- Socket.io は一旦使わないので削除 -->
     <script src="js/main.js"></script>
   </body>
 </html>
