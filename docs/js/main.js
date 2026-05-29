@@ -1,5 +1,5 @@
 // ===============================
-// 自分側だけの完全版 v9
+// 自分側だけの完全版 v9.1（レイアウト確定版）
 // ===============================
 
 // 右クリックメニュー完全無効化
@@ -80,7 +80,7 @@ function layoutZone(zoneId) {
   if (["my-deck","my-drop","my-remove"].includes(zoneId)) {
     list.forEach((el) => {
       el.style.left = "8px";
-      el.style.top = "38px";
+      el.style.top = "30px"; // 上寄せ
     });
     updateZoneCount(zoneId);
     return;
@@ -90,7 +90,7 @@ function layoutZone(zoneId) {
   if (["my-yellow","my-red"].includes(zoneId)) {
     list.forEach((el, i) => {
       el.style.left = `${8 + i * 20}px`;
-      el.style.top = "45px";
+      el.style.top = "30px"; // 45 → 20 に
     });
     updateZoneCount(zoneId);
     return;
@@ -100,7 +100,7 @@ function layoutZone(zoneId) {
   if (zoneId === "my-energy") {
     list.forEach((el, i) => {
       el.style.left = `${8 + i * 48}px`;
-      el.style.top = "45px";
+      el.style.top = "30px"; // 45 → 20
     });
     updateZoneCount(zoneId);
     return;
@@ -110,7 +110,7 @@ function layoutZone(zoneId) {
   if (zoneId === "my-hand") {
     list.forEach((el, i) => {
       el.style.left = `${8 + i * 118}px`;
-      el.style.top = "45px";
+      el.style.top = "30px"; // 45 → 20
     });
     updateZoneCount(zoneId);
     return;
@@ -128,15 +128,15 @@ function layoutZone(zoneId) {
       const col = i % perRow;
       const row = Math.floor(i / perRow);
       el.style.left = `${8 + col * (cardWidth + gap)}px`;
-      el.style.top = `${45 + row * 175}px`;
+      el.style.top = `${30 + row * 175}px`; // 上寄せに合わせて20スタート
     });
     return;
   }
 
-  // テリトリーなど
+  // テリトリーなど（右列）
   list.forEach((el, i) => {
     el.style.left = `${8 + i * 48}px`;
-    el.style.top = "35px"; // ← 上に寄せる
+    el.style.top = "30px"; // 35 → 20 に
   });
 }
 
