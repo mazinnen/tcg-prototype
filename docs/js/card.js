@@ -1,18 +1,35 @@
-// カードデータ
-let cards = {
-  d1: { id: "d1", zone: "my-deck", x: 0, y: 0, img: "gray" },
-  d2: { id: "d2", zone: "my-deck", x: 0, y: 0, img: "gray" },
-  d3: { id: "d3", zone: "my-deck", x: 0, y: 0, img: "gray" },
+// ===============================
+// カードデータ（仮デッキ10枚）
+// ===============================
 
-  h1: { id: "h1", zone: "my-hand", x: 0, y: 0, img: "blue" },
+let cards = {};
 
-  e1: { id: "e1", zone: "my-energy", x: 0, y: 0, img: "yellow" },
+// 山札10枚（灰色）
+for (let i = 1; i <= 10; i++) {
+  cards["d" + i] = {
+    id: "d" + i,
+    zone: "my-deck",
+    x: 0,
+    y: 0,
+    img: "gray"
+  };
+}
 
-  y1: { id: "y1", zone: "my-yellow", x: 0, y: 0, img: "green" },
-  y2: { id: "y2", zone: "my-yellow", x: 0, y: 0, img: "green" },
+// 手札2枚（青）
+cards.h1 = { id: "h1", zone: "my-hand", x: 0, y: 0, img: "blue" };
+cards.h2 = { id: "h2", zone: "my-hand", x: 0, y: 0, img: "blue" };
 
-  r1: { id: "r1", zone: "my-red", x: 0, y: 0, img: "red" }
-};
+// エナジー1枚（黄）
+cards.e1 = { id: "e1", zone: "my-energy", x: 0, y: 0, img: "yellow" };
 
-// 山札の順番（上が最後の要素）
-let deckOrder = ["d1", "d2", "d3"];
+// ライフ（イエロー2枚）
+cards.y1 = { id: "y1", zone: "my-yellow", x: 0, y: 0, img: "green" };
+cards.y2 = { id: "y2", zone: "my-yellow", x: 0, y: 0, img: "green" };
+
+// ライフ（レッド1枚）
+cards.r1 = { id: "r1", zone: "my-red", x: 0, y: 0, img: "red" };
+
+// ===============================
+// 山札の順番（上が最後）
+// ===============================
+let deckOrder = Object.keys(cards).filter(id => id.startsWith("d"));

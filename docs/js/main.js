@@ -1,67 +1,102 @@
-const socket = io("https://tcg-prototype.onrender.com");
-
-// カードDOM生成
-Object.values(cards).forEach((card) => {
-  const el = document.createElement("div");
-  el.className = "card";
-  el.id = card.id;
-
-  // 仮のカード画像（色付き）
-  el.style.background = card.img;
-
-  const zone = document.getElementById(card.zone);
-  zone.appendChild(el);
-
-  el.style.left = card.x + "px";
-  el.style.top = card.y + "px";
-
-  enableDrag(el);
-  layoutZone(card.zone);
-});
-
-// 相手側同期
-socket.on("move_card", (data) => {
-  const el = document.getElementById(data.id);
-  const zone = document.getElementById(data.zone);
-
-  zone.appendChild(el);
-  el.style.left = data.x + "px";
-  el.style.top = data.y + "px";
-
-  layoutZone(data.zone);
-});
 
 // ===============================
-// 山札からドロー
+// アプリ初期化
 // ===============================
-document.getElementById("my-deck").addEventListener("click", () => {
-  // 山札にあるカードを取得
-  const deckCards = Object.values(cards).filter(c => c.zone === "my-deck");
-  if (deckCards.length === 0) return; // 山札が空なら何もしない
+function initApp() {
+  socket = io("https://tcg-prototype.onrender.com");
 
-  // 一番上のカード（最後に追加されたカード）
-  const top = deckCards[deckCards.length - 1];
+  // カードDOM生成
+  Object.values(cards).forEach((card) => {
+    const el = document.createElement("div");
+    el.className = "card";
+    el.id = card.id;
+    el.style.background = card.img;
 
-  // 手札へ移動
-  top.zone = "my-hand";
+    const zone = document.getElementById(card.zone);
+    zone.appendChild(el);
 
-  const el = document.getElementById(top.id);
-  const hand = document.getElementById("my-hand");
-  hand.appendChild(el);
+    el.style.left = card.x + "px";
+    el.style.top = card.y + "px";
 
-  // 手札の整列
-  layoutZone("my-hand");
-  layoutZone("my-deck");
-
-  // 相手側へ同期
-  socket.emit("move_card", {
-    id: top.id,
-    zone: "my-hand",
-    x: 0,
-    y: 0
+    enableDrag(el);
   });
-});
 
+  // 山札を deckOrder に基づいて描画
+  renderDeck();
+
+  // 山札クリック → ドロー
+  setupDraw();
+
+  // 山札右クリック → シャッフル
+  setupShuffle();
+
+  // Socket.io 同期
+  setupSocketSync();
+}
+
+
+// ===============================
+// 山札の描画（deckOrder に基づく）
+// ===============================
+function renderDeck() {
+  const deckZone = document.getElementById("my-deck");
+
+  // 山札ラベル + カウンターを残す
+  deckZone.innerHTML = `
+    山札
+    <div class="deck-count" id="my-deck-count"></div>
+  `;
+
+  deckOrder.forEach((id) => {
+    const el = document.getElementById(id);
+    deckZone.appendChild(el);
+  });
+
+  layoutZone("my-deck");
+  updateDeckCount();
+}
+
+
+// ===============================
+// 山札の残り枚数更新
+// ===============================
+function updateDeckCount() {
+  const count = deckOrder.length;
+  document.getElementById("my-deck-count").textContent = count;
+}
+
+
+// ===============================
+// ドロー処理
+// ===============================
+function setupDraw() {
+  document.getElementById("my-deck").addEventListener("click", () => {
+    if (deckOrder.length === 0) return;
+
+    const topId = deckOrder.pop();
+    const card = cards[topId];
+
+    card.zone = "my-hand";
+
+    const el = document.getElementById(topId);
+    document.getElementById("my-hand").appendChild(el);
+
+    layoutZone("my-hand");
+    renderDeck();
+
+    socket.emit("move_card", {
+      id: topId,
+      zone: "my-hand",
+      x: 0,
+      y: 0
+    });
+  });
+}
+
+
+// ===============================
+// シャッフル処理
+// ===============================
 function shuffleDeck() {
   for (let i = deckOrder.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -69,62 +104,37 @@ function shuffleDeck() {
   }
 }
 
-// ===============================
-// 山札を右クリックでシャッフル
-// ===============================
-document.getElementById("my-deck").addEventListener("contextmenu", (e) => {
-  e.preventDefault();
+function setupShuffle() {
+  document.getElementById("my-deck").addEventListener("contextmenu", (e) => {
+    e.preventDefault();
 
-  shuffleDeck();
+    shuffleDeck();
+    renderDeck();
 
-  // DOM の重ね順を更新
-  const deckZone = document.getElementById("my-deck");
-  deckZone.innerHTML = ""; // 一旦クリア
-
-  deckOrder.forEach((id) => {
-    const el = document.getElementById(id);
-    deckZone.appendChild(el);
+    socket.emit("shuffle_deck", { order: deckOrder });
   });
-
-  layoutZone("my-deck");
-
-  // 相手側へ同期
-  socket.emit("shuffle_deck", { order: deckOrder });
-});
-
-socket.on("shuffle_deck", (data) => {
-  deckOrder = data.order;
-
-  const deckZone = document.getElementById("op-deck");
-  deckZone.innerHTML = "";
-
-  deckOrder.forEach((id) => {
-    const el = document.getElementById(id);
-    deckZone.appendChild(el);
-  });
-
-  layoutZone("op-deck");
-});
-
-function updateDeckCount() {
-  const myCount = deckOrder.length;
-  document.getElementById("my-deck-count").textContent = myCount;
-
-  const opCount = deckOrder.length; // 相手も同じ山札構造を共有
-  document.getElementById("op-deck-count").textContent = opCount;
 }
 
-socket.on("shuffle_deck", (data) => {
-  deckOrder = data.order;
 
-  const deckZone = document.getElementById("op-deck");
-  deckZone.innerHTML = "";
+// ===============================
+// Socket.io 同期
+// ===============================
+function setupSocketSync() {
+  // カード移動
+  socket.on("move_card", (data) => {
+    const el = document.getElementById(data.id);
+    const zone = document.getElementById(data.zone);
 
-  deckOrder.forEach((id) => {
-    const el = document.getElementById(id);
-    deckZone.appendChild(el);
+    zone.appendChild(el);
+    el.style.left = data.x + "px";
+    el.style.top = data.y + "px";
+
+    layoutZone(data.zone);
   });
 
-  layoutZone("op-deck");
-  updateDeckCount();
-});
+  // シャッフル同期
+  socket.on("shuffle_deck", (data) => {
+    deckOrder = data.order;
+    renderDeck();
+  });
+}
