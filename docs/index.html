@@ -12,6 +12,23 @@
       CARD
     </div>
 
+    <div id="zones" style="display:flex;gap:20px;margin-top:20px;">
+        <div id="deck" class="zone">山札</div>
+        <div id="hand" class="zone">手札</div>
+        <div id="field" class="zone">場</div>
+    </div>
+
+    <style>
+    .zone {
+        width: 200px;
+        height: 150px;
+        border: 2px solid #444;
+        position: relative;
+        padding: 5px;
+    }
+    </style>
+
+
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="client.js"></script>
   </body>
