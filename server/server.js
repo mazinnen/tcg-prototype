@@ -8,20 +8,15 @@ app.use(cors());
 
 const server = createServer(app);
 
-// ===============================
-// io はここで 1 回だけ宣言する
-// ===============================
 const io = new Server(server, {
   cors: {
     origin: [
+      // あなたの GitHub Pages の URL に変える
       "https://mazinnen.github.io"
     ]
   }
 });
 
-// ===============================
-// Socket.io イベント
-// ===============================
 io.on("connection", (socket) => {
   console.log("client connected");
 
@@ -34,9 +29,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// ===============================
-// Render のポートで起動
-// ===============================
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
   console.log("Server running on port", PORT);

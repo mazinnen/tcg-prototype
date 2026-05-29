@@ -19,47 +19,52 @@
   border-radius: 6px;
 }
 
-/* 左側：ライフ（5枚重ねる） */
+/* ライフ */
 .life {
   width: 160px;
   height: 110px;
   background: #fff7cc;
 }
 
-/* 中央：フィールド（広め） */
+/* フィールド */
 .field {
   width: 520px;
   height: 280px;
 }
 
-/* 2段目のフィールド空白 */
 .filler {
   width: 520px;
   height: 20px;
   background: transparent;
 }
 
-/* 右側：カード1枚分 */
-.territory,
+/* 山札・ドロップ・リムーブ・テリトリー */
 .deck,
 .drop,
-.remove {
+.remove,
+.territory {
   width: 120px;
   height: 160px;
 }
 
-/* エナジー：横長で10枚置ける */
+/* エナジー */
 .energy {
   width: 320px;
   height: 140px;
 }
 
-/* 相手側を180°回転 */
+/* 手札 */
+.hand {
+  width: 800px;
+  height: 160px;
+  background: #eef;
+}
+
+/* 相手側 */
 .opponent {
   transform: rotate(180deg);
 }
 
-/* 相手側のカードは正位置に戻す */
 .opponent .card {
   transform: rotate(180deg);
 }
@@ -76,11 +81,12 @@
   background-position: center;
 }
 
+/* 山札枚数表示 */
 .deck-count {
   position: absolute;
   top: 4px;
   right: 6px;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: white;
   padding: 2px 6px;
   border-radius: 4px;

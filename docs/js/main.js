@@ -21,27 +21,14 @@ function initApp() {
     enableDrag(el);
   });
 
-  // 山札を deckOrder に基づいて描画
   renderDeck();
-
-  // 山札クリック → ドロー
   setupDraw();
-
-  // 山札右クリック → シャッフル
   setupShuffle();
-
-  // Socket.io 同期
   setupSocketSync();
 }
 
-
-// ===============================
-// 山札の描画（deckOrder に基づく）
-// ===============================
 function renderDeck() {
   const deckZone = document.getElementById("my-deck");
-
-  // 山札ラベル + カウンターを残す
   deckZone.innerHTML = `
     山札
     <div class="deck-count" id="my-deck-count"></div>
@@ -56,19 +43,10 @@ function renderDeck() {
   updateDeckCount();
 }
 
-
-// ===============================
-// 山札の残り枚数更新
-// ===============================
 function updateDeckCount() {
-  const count = deckOrder.length;
-  document.getElementById("my-deck-count").textContent = count;
+  document.getElementById("my-deck-count").textContent = deckOrder.length;
 }
 
-
-// ===============================
-// ドロー処理
-// ===============================
 function setupDraw() {
   document.getElementById("my-deck").addEventListener("click", () => {
     if (deckOrder.length === 0) return;
@@ -93,10 +71,6 @@ function setupDraw() {
   });
 }
 
-
-// ===============================
-// シャッフル処理
-// ===============================
 function shuffleDeck() {
   for (let i = deckOrder.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -115,12 +89,7 @@ function setupShuffle() {
   });
 }
 
-
-// ===============================
-// Socket.io 同期
-// ===============================
 function setupSocketSync() {
-  // カード移動
   socket.on("move_card", (data) => {
     const el = document.getElementById(data.id);
     const zone = document.getElementById(data.zone);
@@ -132,7 +101,6 @@ function setupSocketSync() {
     layoutZone(data.zone);
   });
 
-  // シャッフル同期
   socket.on("shuffle_deck", (data) => {
     deckOrder = data.order;
     renderDeck();

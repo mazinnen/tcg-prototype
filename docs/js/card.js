@@ -1,7 +1,3 @@
-// ===============================
-// カードデータ（仮デッキ10枚）
-// ===============================
-
 let cards = {};
 
 // 山札10枚（灰色）
@@ -29,7 +25,5 @@ cards.y2 = { id: "y2", zone: "my-yellow", x: 0, y: 0, img: "green" };
 // ライフ（レッド1枚）
 cards.r1 = { id: "r1", zone: "my-red", x: 0, y: 0, img: "red" };
 
-// ===============================
 // 山札の順番（上が最後）
-// ===============================
-let deckOrder = Object.keys(cards).filter(id => id.startsWith("d"));
+let deckOrder = Object.keys(cards).filter((id) => id.startsWith("d"));
