@@ -75,3 +75,15 @@
   background-size: cover;
   background-position: center;
 }
+
+.deck-count {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  pointer-events: none;
+}

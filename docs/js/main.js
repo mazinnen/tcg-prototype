@@ -61,3 +61,70 @@ document.getElementById("my-deck").addEventListener("click", () => {
     y: 0
   });
 });
+
+function shuffleDeck() {
+  for (let i = deckOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deckOrder[i], deckOrder[j]] = [deckOrder[j], deckOrder[i]];
+  }
+}
+
+// ===============================
+// 山札を右クリックでシャッフル
+// ===============================
+document.getElementById("my-deck").addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+
+  shuffleDeck();
+
+  // DOM の重ね順を更新
+  const deckZone = document.getElementById("my-deck");
+  deckZone.innerHTML = ""; // 一旦クリア
+
+  deckOrder.forEach((id) => {
+    const el = document.getElementById(id);
+    deckZone.appendChild(el);
+  });
+
+  layoutZone("my-deck");
+
+  // 相手側へ同期
+  socket.emit("shuffle_deck", { order: deckOrder });
+});
+
+socket.on("shuffle_deck", (data) => {
+  deckOrder = data.order;
+
+  const deckZone = document.getElementById("op-deck");
+  deckZone.innerHTML = "";
+
+  deckOrder.forEach((id) => {
+    const el = document.getElementById(id);
+    deckZone.appendChild(el);
+  });
+
+  layoutZone("op-deck");
+});
+
+function updateDeckCount() {
+  const myCount = deckOrder.length;
+  document.getElementById("my-deck-count").textContent = myCount;
+
+  const opCount = deckOrder.length; // 相手も同じ山札構造を共有
+  document.getElementById("op-deck-count").textContent = opCount;
+}
+
+socket.on("shuffle_deck", (data) => {
+  deckOrder = data.order;
+
+  const deckZone = document.getElementById("op-deck");
+  deckZone.innerHTML = "";
+
+  deckOrder.forEach((id) => {
+    const el = document.getElementById(id);
+    deckZone.appendChild(el);
+  });
+
+  layoutZone("op-deck");
+  updateDeckCount();
+});
