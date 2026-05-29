@@ -1,95 +1,134 @@
-.player-area {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 40px;
+body {
+  font-family: system-ui, sans-serif;
+  background: #f0f0f5;
+  margin: 0;
+  overflow: hidden; /* ← 全体スクロールを消す */
 }
 
-.row {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
+h2 {
+  margin: 8px 16px;
+  font-size: 18px; /* ← タイトル小さく */
 }
+
+/* アのレイアウト＋右に詳細を横並び */
+#board-wrapper {
+  display: flex;
+  gap: 12px;
+  margin: 0 8px 8px 8px;
+  transform-origin: top left;
+}
+
+/* 3列Grid（アのレイアウト） */
+#my-area {
+  display: grid;
+  grid-template-columns: 200px 700px 150px; /* ← 左列200px */
+  grid-template-rows: 200px 200px 200px 200px; /* ← 全段カードが収まる高さ */
+  gap: 8px;
+}
+
+/* 左列 */
+#my-yellow { grid-column: 1; grid-row: 1; }
+#my-red    { grid-column: 1; grid-row: 2; }
+#my-remove { grid-column: 1; grid-row: 3; }
+
+/* 中央列 */
+#my-field  { grid-column: 2; grid-row: 1 / span 2; }
+#my-energy { grid-column: 2; grid-row: 3; }
+
+/* 右列 */
+#my-territory { grid-column: 3; grid-row: 1; }
+#my-deck      { grid-column: 3; grid-row: 2; }
+#my-drop      { grid-column: 3; grid-row: 3; }
+
+/* 下段（手札） */
+#my-hand { grid-column: 1 / span 3; grid-row: 4; }
 
 .zone {
   border: 2px solid #444;
-  background: #f5f5f5;
+  background: #fafafa;
+  border-radius: 6px;
   position: relative;
-  padding: 5px;
-  border-radius: 6px;
+  padding: 28px 8px 8px 8px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* ライフ */
-.life {
-  width: 160px;
-  height: 110px;
-  background: #fff7cc;
-}
-
-/* フィールド */
-.field {
-  width: 520px;
-  height: 280px;
-}
-
-.filler {
-  width: 520px;
-  height: 20px;
-  background: transparent;
-}
-
-/* 山札・ドロップ・リムーブ・テリトリー */
-.deck,
-.drop,
-.remove,
-.territory {
-  width: 120px;
-  height: 160px;
-}
-
-/* エナジー */
-.energy {
-  width: 320px;
-  height: 140px;
-}
-
-/* 手札 */
-.hand {
-  width: 800px;
-  height: 160px;
-  background: #eef;
-}
-
-/* 相手側 */
-.opponent {
-  transform: rotate(180deg);
-}
-
-.opponent .card {
-  transform: rotate(180deg);
-}
-
-/* カード */
-.card {
-  width: 80px;
-  height: 120px;
-  position: absolute;
-  cursor: grab;
-  border-radius: 6px;
-  border: 2px solid #333;
-  background-size: cover;
-  background-position: center;
-}
-
-/* 山札枚数表示 */
-.deck-count {
+.zone-label {
   position: absolute;
   top: 4px;
-  right: 6px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
+  left: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.zone-count {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
   padding: 2px 6px;
   border-radius: 4px;
+  font-size: 12px;
+}
+
+.yellow-zone { background: #fff8c6; }
+.red-zone    { background: #ffd6d6; }
+
+/* カード（110×165） */
+.card {
+  width: 110px;
+  height: 165px;
+  border-radius: 6px;
+  border: 2px solid #333;
+  position: absolute;
+  cursor: grab;
+  background-size: cover;
+  background-position: center;
+  transform-origin: center center;
+}
+
+/* 通常カードの表裏 */
+.card.front { background-image: url("../img/deck/BB-BTR-012BR.png"); }
+.card.back  { background-image: url("../img/card-back.png"); }
+
+/* テリトリー専用カード */
+.card.territory-front { background-image: url("../img/territory-front.png"); }
+.card.territory-back  { background-image: url("../img/territory-back.png"); }
+
+/* 右側のカード詳細エリア（縦長） */
+#card-detail {
+  width: 260px;
+  height: 560px;
+  border: 2px solid #444;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-title {
   font-size: 14px;
-  pointer-events: none;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.detail-image {
+  flex: 0 0 330px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  background: #eee;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-bottom: 8px;
+}
+
+.detail-text {
+  flex: 1;
+  overflow: auto;
+  font-size: 12px;
+  white-space: pre-wrap;
 }

@@ -2,36 +2,71 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>TCG Simple</title>
-    <style>
-      .zone {
-        width: 300px;
-        height: 200px;
-        border: 2px solid #444;
-        margin: 20px;
-        padding: 10px;
-        position: relative;
-      }
-      .card {
-        width: 60px;
-        height: 90px;
-        border: 2px solid #333;
-        border-radius: 6px;
-        background: gray;
-        position: absolute;
-      }
-      #hand .card {
-        background: blue;
-      }
-    </style>
+    <title>TCG Prototype</title>
+    <link rel="stylesheet" href="css/layout.css" />
   </head>
 
   <body>
-    <h2>TCG Simple</h2>
+    <h2>TCG Prototype</h2>
 
-    <div id="deck" class="zone">山札</div>
-    <div id="hand" class="zone">手札</div>
+    <div id="board-wrapper">
+      <div id="my-area">
+        <!-- 左列 -->
+        <div id="my-yellow" class="zone yellow-zone">
+          <div class="zone-label">イエロー</div>
+          <div class="zone-count" id="my-yellow-count">0</div>
+        </div>
 
-    <script src="main.js"></script>
+        <div id="my-red" class="zone red-zone">
+          <div class="zone-label">レッド</div>
+          <div class="zone-count" id="my-red-count">0</div>
+        </div>
+
+        <div id="my-remove" class="zone">
+          <div class="zone-label">リムーブ</div>
+          <div class="zone-count" id="my-remove-count">0</div>
+        </div>
+
+        <!-- 中央列 -->
+        <div id="my-field" class="zone field">
+          <div class="zone-label">フィールド</div>
+        </div>
+
+        <div id="my-energy" class="zone">
+          <div class="zone-label">エナジー</div>
+          <div class="zone-count" id="my-energy-count">0</div>
+        </div>
+
+        <!-- 右列 -->
+        <div id="my-territory" class="zone">
+          <div class="zone-label">テリトリー</div>
+        </div>
+
+        <div id="my-deck" class="zone">
+          <div class="zone-label">山札</div>
+          <div class="zone-count" id="my-deck-count">40</div>
+        </div>
+
+        <div id="my-drop" class="zone">
+          <div class="zone-label">ドロップ</div>
+          <div class="zone-count" id="my-drop-count">0</div>
+        </div>
+
+        <!-- 下段（手札） -->
+        <div id="my-hand" class="zone hand">
+          <div class="zone-label">手札</div>
+          <div class="zone-count" id="my-hand-count">0</div>
+        </div>
+      </div>
+
+      <!-- 右側：カード詳細エリア -->
+      <div id="card-detail">
+        <div class="detail-title">カード情報</div>
+        <div class="detail-image"></div>
+        <div class="detail-text">カードテキスト</div>
+      </div>
+    </div>
+
+    <script src="js/main.js"></script>
   </body>
 </html>
