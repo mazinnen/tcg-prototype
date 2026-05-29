@@ -1,11 +1,13 @@
-const socket = io("https://tcg-prototype.onrender.com");
+const socket = io("https://your-render-server.onrender.com");
 
 // カードDOM生成
 Object.values(cards).forEach((card) => {
   const el = document.createElement("div");
   el.className = "card";
   el.id = card.id;
-  el.textContent = card.id.toUpperCase();
+
+  // 仮のカード画像（色付き）
+  el.style.background = card.img;
 
   const zone = document.getElementById(card.zone);
   zone.appendChild(el);
