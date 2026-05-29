@@ -30,3 +30,34 @@ socket.on("move_card", (data) => {
 
   layoutZone(data.zone);
 });
+
+// ===============================
+// 山札からドロー
+// ===============================
+document.getElementById("my-deck").addEventListener("click", () => {
+  // 山札にあるカードを取得
+  const deckCards = Object.values(cards).filter(c => c.zone === "my-deck");
+  if (deckCards.length === 0) return; // 山札が空なら何もしない
+
+  // 一番上のカード（最後に追加されたカード）
+  const top = deckCards[deckCards.length - 1];
+
+  // 手札へ移動
+  top.zone = "my-hand";
+
+  const el = document.getElementById(top.id);
+  const hand = document.getElementById("my-hand");
+  hand.appendChild(el);
+
+  // 手札の整列
+  layoutZone("my-hand");
+  layoutZone("my-deck");
+
+  // 相手側へ同期
+  socket.emit("move_card", {
+    id: top.id,
+    zone: "my-hand",
+    x: 0,
+    y: 0
+  });
+});
