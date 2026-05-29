@@ -1,0 +1,80 @@
+.player-area {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.row {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.zone {
+  border: 2px solid #444;
+  background: #f5f5f5;
+  position: relative;
+  padding: 5px;
+}
+
+/* ライフ（5枚重ねる前提） */
+.life {
+  width: 160px;
+  height: 100px;
+  background: #fff7cc;
+}
+
+/* フィールド（広め） */
+.field {
+  width: 500px;
+  height: 260px;
+}
+
+/* テリトリー（カード1枚分） */
+.territory {
+  width: 120px;
+  height: 160px;
+}
+
+/* 山札・ドロップ・リムーブ（カード1枚分） */
+.deck, .drop, .remove {
+  width: 120px;
+  height: 160px;
+}
+
+/* エナジー（横長） */
+.energy {
+  width: 300px;
+  height: 120px;
+}
+
+/* フィールド2段目の空白 */
+.filler {
+  width: 500px;
+  height: 20px;
+  background: transparent;
+}
+
+/* 相手側を180°回転 */
+.opponent {
+  transform: rotate(180deg);
+}
+
+/* 相手側のカードは正位置に戻す */
+.opponent .card {
+  transform: rotate(180deg);
+}
+
+/* カード */
+.card {
+  width: 80px;
+  height: 120px;
+  background: #ccc;
+  position: absolute;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
