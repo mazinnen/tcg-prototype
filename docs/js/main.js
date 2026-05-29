@@ -1,4 +1,4 @@
-const socket = io("https://your-render-server.onrender.com");
+const socket = io("https://tcg-prototype.onrender.com");
 
 // カードDOM生成
 Object.values(cards).forEach((card) => {

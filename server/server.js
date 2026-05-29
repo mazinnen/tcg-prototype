@@ -10,6 +10,13 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" }
 });
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "https://mazinnen.github.io",
+    ]
+  }
+});
 
 io.on("connection", (socket) => {
   socket.on("move_card", (data) => {
