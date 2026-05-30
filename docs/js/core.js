@@ -303,3 +303,32 @@ function autoScale() {
 
   wrapper.style.transform = `scale(${scale})`;
 }
+
+function resetAllCards() {
+  // 全カード DOM を削除
+  document.querySelectorAll(".card").forEach(el => el.remove());
+
+  // 全カードデータを削除
+  for (const k in cards) delete cards[k];
+
+  // デッキ順もクリア
+  deckOrder = [];
+
+  console.log("全カードをリセットしました");
+}
+
+function resetZones() {
+  const zones = [
+    "my-deck", "my-hand", "my-energy", "my-life",
+    "my-yellow", "my-red", "my-territory",
+    "my-drop", "my-remove",
+    "op-deck", "op-hand", "op-field"
+  ];
+
+  zones.forEach(id => {
+    const zone = document.getElementById(id);
+    if (zone) zone.innerHTML = "";
+  });
+
+  console.log("全ゾーンをリセットしました");
+}

@@ -3,6 +3,9 @@
 async function initDeckFromList(deckJson, carddata, workId) {
   deckOrder = [];
   Object.keys(cards).forEach(k => delete cards[k]); // 既存カードをクリア
+ 
+  resetAllCards();
+  resetZones();
 
   // ★ テリトリーカードを登録
   const territoryId = deckJson.territory;
@@ -37,7 +40,8 @@ async function initDeckFromList(deckJson, carddata, workId) {
         name: carddata[id].name,
         text: carddata[id].text,
         cardType: carddata[id].type,
-        image: `data/img/${workId}/${id}.png`  // ★ 自動生成
+        image: `data/img/${workId}/${id}.png`,  // ★ 自動生成
+        back: `data/img/card-back.png`
       };
     }
   });
@@ -91,4 +95,12 @@ function restoreDeckFaces() {
       applyFaceClass(el);
     }
   });
+}
+
+function shuffleDeck() {
+  for (let i = deckOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deckOrder[i], deckOrder[j]] = [deckOrder[j], deckOrder[i]];
+  }
+  console.log("デッキをシャッフルしました");
 }
