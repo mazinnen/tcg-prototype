@@ -1,5 +1,49 @@
 // deck.js
 
+async function initDeckFromList(deckJson, carddata, workId) {
+  deckOrder = [];
+  Object.keys(cards).forEach(k => delete cards[k]); // 既存カードをクリア
+
+  // ★ テリトリーカードを登録
+  const territoryId = deckJson.territory;
+  cards["territory"] = {
+    id: "territory",
+    baseId: territoryId,
+    zone: "my-territory",
+    face: "back",
+    type: "territory",
+    name: territoryId,
+    text: "",
+    imageOpen:  `data/img/${workId}/${territoryId}_O.png`,
+    imageClose: `data/img/${workId}/${territoryId}_C.png`
+  };
+
+  // ★ テリトリーDOMは createAllCards() で生成される
+  
+  deckJson.cards.forEach(entry => {
+    const { id, count } = entry;
+
+    for (let i = 0; i < count; i++) {
+      const uid = `${id}_${i+1}`;
+
+      deckOrder.push(uid);
+
+      cards[uid] = {
+        id: uid,
+        baseId: id,
+        zone: "my-deck",
+        face: "back",
+        type: "normal",
+        name: carddata[id].name,
+        text: carddata[id].text,
+        cardType: carddata[id].type,
+        image: `data/img/${workId}/${id}.png`  // ★ 自動生成
+      };
+    }
+  });
+}
+
+
 function initDeck() {
   deckOrder = [];
   for (let i = 1; i <= 40; i++) {

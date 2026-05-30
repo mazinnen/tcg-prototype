@@ -24,6 +24,17 @@ function createAllCards() {
     el.dataset.type = card.type;
     el.dataset.rotated = "0";
 
+    // ★ 通常カード
+    if (card.type === "normal") {
+      el.style.backgroundImage = `url(${card.image})`;
+    }
+
+    // ★ テリトリーカード
+    if (card.type === "territory") {
+      const img = (card.face === "front") ? card.imageOpen : card.imageClose;
+      el.style.backgroundImage = `url(${img})`;
+    }
+
     applyFaceClass(el);
     document.getElementById(card.zone).appendChild(el);
 
@@ -220,11 +231,25 @@ function enableRotate(el) {
 function enableFlip(el) {
   el.addEventListener("contextmenu", (e) => {
     const zoneId = cards[el.id].zone;
+
+    // テリトリー or ライフゾーンのみ
     if (!["my-yellow","my-red","my-territory"].includes(zoneId)) return;
     e.preventDefault();
 
-    const next = cards[el.id].face === "front" ? "back" : "front";
-    cards[el.id].face = next;
+    const card = cards[el.id];
+
+    // ★ テリトリーは専用画像を切り替える
+    if (card.type === "territory") {
+      card.face = (card.face === "front") ? "back" : "front";
+      const img = (card.face === "front") ? card.imageOpen : card.imageClose;
+      el.style.backgroundImage = `url(${img})`;
+      el.dataset.face = card.face;
+      return;
+    }
+    
+    // ★ 通常の裏表
+    const next = card.face === "front" ? "back" : "front";
+    card.face = next;
     el.dataset.face = next;
     applyFaceClass(el);
   });

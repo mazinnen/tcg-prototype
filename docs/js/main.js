@@ -1,12 +1,10 @@
-// main.js（v12）
-window.addEventListener("DOMContentLoaded", () => {
-  initDeck();
+// main.js
+
+window.addEventListener("DOMContentLoaded", async () => {
+  await initWorkAndDeckUI();   // ★ 作品・デッキ選択 UI
+
   initTerritory();
-  createAllCards();
-
-  layoutAllZones();
   setupDraw();
-
   setupStackDialog();
   setupDeckPeekDialog();
 

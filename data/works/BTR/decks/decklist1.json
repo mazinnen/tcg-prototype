@@ -1,0 +1,11 @@
+{
+    "deckName": "フラッシュバッカー",
+    "territory": "BTR2-035",
+    "cards": [
+        { "id": "BTR-015", "count": 4 },
+        { "id": "BTR2-013", "count": 4 },
+        { "id": "BTR2-029", "count": 4 },
+        { "id": "BTR2-030", "count": 4 },
+        { "id": "BTR2-039", "count": 4 }
+  ]
+}
