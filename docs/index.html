@@ -67,6 +67,33 @@
       </div>
     </div>
 
-    <script src="js/main.js"></script>
+    <!-- ▼ 重なり一覧ダイアログ -->
+    <div id="stack-dialog" class="dialog hidden">
+      <div class="dialog-inner">
+        <div class="dialog-title">カード一覧</div>
+        <div id="stack-list" class="stack-list"></div>
+        <button id="stack-close">閉じる</button>
+      </div>
+    </div>
+
+    <!-- ▼ 山札確認ダイアログ -->
+    <div id="deck-peek-dialog" class="dialog hidden">
+      <div class="dialog-inner">
+        <div class="dialog-title">山札の上から確認</div>
+        <div id="deck-peek-list" class="stack-list"></div>
+        <div class="dialog-buttons">
+          <button id="deck-peek-top">上に戻す</button>
+          <button id="deck-peek-bottom">下に戻す</button>
+          <button id="deck-peek-close">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+<script src="js/core.js"></script>
+<script src="js/deck.js"></script>
+<script src="js/dialog_stack.js"></script>
+<script src="js/dialog_peek.js"></script>
+<script src="js/main.js"></script>
+
   </body>
 </html>

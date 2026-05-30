@@ -132,3 +132,54 @@ h2 {
   font-size: 12px;
   white-space: pre-wrap;
 }
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.dialog.hidden {
+  display: none;
+}
+
+.dialog-inner {
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  width: 420px;
+  max-height: 80vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.stack-list {
+  flex: 1;
+  overflow-x: auto;   /* ← 横スクロール */
+  overflow-y: hidden; /* ← 縦スクロールは不要 */
+  white-space: nowrap; /* ← 折り返さず横一列に並べる */
+  padding-bottom: 8px;
+}
+
+.stack-list .card {
+  position: relative !important;
+  display: inline-block; /* ← 横並び */
+  margin-right: 8px;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
