@@ -45,21 +45,8 @@ async function addDeck(workId, name, data) {
 async function initWorkAndDeckUI() {
   const workList = document.getElementById("work-list");
 
-  let works;
-  try {
-    const worksRes = await fetch("data/works.json");
-    works = await worksRes.json();
-  } catch (e) {
-    console.error("works.json の読み込みに失敗:", e);
-    return;
-  }
+  const works = await dbGetAll("works");
 
-  if (!Array.isArray(works)) {
-    console.error("works.json が配列ではありません:", works);
-    return;
-  }
-
-  // 作品一覧を select に追加
   workList.innerHTML = "";
   works.forEach(w => {
     const opt = document.createElement("option");
@@ -68,10 +55,10 @@ async function initWorkAndDeckUI() {
     workList.appendChild(opt);
   });
 
-  // 最初の作品のデッキ一覧を表示
-  await updateDeckListUI(workList.value);
+  if (works.length > 0) {
+    updateDeckListUI(works[0].id);
+  }
 
-  // 作品変更時にデッキ一覧を更新
   workList.addEventListener("change", () => {
     updateDeckListUI(workList.value);
   });

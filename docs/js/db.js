@@ -7,18 +7,16 @@ let db = null;
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-
+    
     req.onupgradeneeded = (e) => {
-      db = e.target.result;
+      const db = e.target.result;
 
       if (!db.objectStoreNames.contains("works")) {
         db.createObjectStore("works", { keyPath: "id" });
       }
+
       if (!db.objectStoreNames.contains("decks")) {
         db.createObjectStore("decks", { keyPath: "deckId" });
-      }
-      if (!db.objectStoreNames.contains("settings")) {
-        db.createObjectStore("settings", { keyPath: "key" });
       }
     };
 
@@ -30,6 +28,7 @@ function openDB() {
     req.onerror = (e) => reject(e);
   });
 }
+
 
 function dbPut(store, value) {
   return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-// solo.js — 一人回しモード専用メインスクリプト
+// solo.js — DB版 一人回しモード
 
 const workList = document.getElementById("work-list");
 const deckList = document.getElementById("deck-list");
@@ -9,14 +9,13 @@ let selectedDeckId = null;
 --------------------------------------------------------- */
 window.addEventListener("DOMContentLoaded", async () => {
   await openDB();              // DB を開く
-  await initWorkAndDeckUI();   // 作品一覧＋デッキ一覧を構築
+  await initWorkAndDeckUI();   // DB から作品とデッキを読み込む
 
-  // 初期選択
   selectedDeckId = deckList.value;
 });
 
 /* ---------------------------------------------------------
-   デッキ選択（select 方式）
+   デッキ選択（select）
 --------------------------------------------------------- */
 deckList.addEventListener("change", () => {
   selectedDeckId = deckList.value;
@@ -33,8 +32,15 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   }
 
   const workId = workList.value;
-  const deck = await dbGet("decks", selectedDeckId);
 
+  // DB からデッキを取得
+  const deck = await dbGet("decks", selectedDeckId);
+  if (!deck) {
+    alert("デッキが見つかりません");
+    return;
+  }
+
+  // 作品フォルダからカードデータを取得
   const cardRes = await fetch(`data/works/${workId}/carddata.json`);
   const carddata = await cardRes.json();
 
@@ -45,7 +51,7 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   createAllCards();
   layoutAllZones();
 
-  // ★ 初期 5 ドロー
+  // 初期 5 ドロー
   initialDraw();
 });
 
@@ -105,7 +111,12 @@ function setupLifeAndEnergy() {
     const uid = deckOrder.pop();
     const card = cards[uid];
     card.zone = "my-yellow";
-    document.getElementById("my-yellow").appendChild(document.getElementById(uid));
+
+    const el = document.getElementById(uid);
+    el.dataset.face = "front";
+    el.style.backgroundImage = `url(${card.image})`;
+
+    document.getElementById("my-yellow").appendChild(el);
   }
 
   // 5 → レッド
@@ -113,15 +124,19 @@ function setupLifeAndEnergy() {
     const uid = deckOrder.pop();
     const card = cards[uid];
     card.zone = "my-red";
-    document.getElementById("my-red").appendChild(document.getElementById(uid));
+
+    const el = document.getElementById(uid);
+    el.dataset.face = "front";
+    el.style.backgroundImage = `url(${card.image})`;
+
+    document.getElementById("my-red").appendChild(el);
   }
 
-    // 2 → エナジー
+  // 2 → エナジー（表向き）
   for (let i = 0; i < 2; i++) {
     const uid = deckOrder.pop();
     const card = cards[uid];
     card.zone = "my-energy";
-    card.face = "front"; // ★ 表向きにする
 
     const el = document.getElementById(uid);
     el.dataset.face = "front";
