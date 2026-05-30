@@ -45,6 +45,8 @@ async function initDeckFromList(deckJson, carddata, workId) {
       };
     }
   });
+  
+  shuffleDeck();
 }
 
 

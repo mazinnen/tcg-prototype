@@ -16,7 +16,9 @@ const COUNT_ZONES = [
 
 // --- カード生成 ---
 function createAllCards() {
-  Object.values(cards).forEach((card) => {
+  // ★ デッキは deckOrder の順番で生成
+  deckOrder.forEach(uid => {
+    const card = cards[uid];
     const el = document.createElement("div");
     el.className = "card";
     el.id = card.id;
@@ -24,18 +26,18 @@ function createAllCards() {
     el.dataset.type = card.type;
     el.dataset.rotated = "0";
 
-    // ★ 通常カード
+    let img = "";
+
     if (card.type === "normal") {
-      el.style.backgroundImage = `url(${card.image})`;
+      img = (card.face === "front") ? card.image : card.back;
     }
 
-    // ★ テリトリーカード
     if (card.type === "territory") {
-      const img = (card.face === "front") ? card.imageOpen : card.imageClose;
-      el.style.backgroundImage = `url(${img})`;
+      img = (card.face === "front") ? card.imageOpen : card.imageClose;
     }
 
-    applyFaceClass(el);
+    el.style.backgroundImage = `url(${img})`;
+
     document.getElementById(card.zone).appendChild(el);
 
     enableDrag(el);
@@ -43,7 +45,40 @@ function createAllCards() {
     enableFlip(el);
     enablePreview(el);
   });
+
+  // ★ デッキ以外のカード（テリトリーなど）
+  Object.values(cards)
+    .filter(c => c.zone !== "my-deck")
+    .forEach(card => {
+      const el = document.createElement("div");
+      el.className = "card";
+      el.id = card.id;
+      el.dataset.face = card.face;
+      el.dataset.type = card.type;
+      el.dataset.rotated = "0";
+
+      let img = "";
+
+      if (card.type === "normal") {
+        img = (card.face === "front") ? card.image : card.back;
+      }
+
+      if (card.type === "territory") {
+        img = (card.face === "front") ? card.imageOpen : card.imageClose;
+      }
+
+      el.style.backgroundImage = `url(${img})`;
+
+      document.getElementById(card.zone).appendChild(el);
+
+      enableDrag(el);
+      enableRotate(el);
+      enableFlip(el);
+      enablePreview(el);
+    });
 }
+
+
 
 // --- レイアウト ---
 function layoutAllZones() {
@@ -230,15 +265,15 @@ function enableRotate(el) {
 
 function enableFlip(el) {
   el.addEventListener("contextmenu", (e) => {
-    const zoneId = cards[el.id].zone;
+    const card = cards[el.id];
+    const zoneId = card.zone;
 
-    // テリトリー or ライフゾーンのみ
-    if (!["my-yellow","my-red","my-territory"].includes(zoneId)) return;
+    // 裏表切替が許可されるゾーン
+    if (!["my-yellow","my-red","my-territory","my-life"].includes(zoneId)) return;
+
     e.preventDefault();
 
-    const card = cards[el.id];
-
-    // ★ テリトリーは専用画像を切り替える
+    // テリトリー
     if (card.type === "territory") {
       card.face = (card.face === "front") ? "back" : "front";
       const img = (card.face === "front") ? card.imageOpen : card.imageClose;
@@ -246,27 +281,30 @@ function enableFlip(el) {
       el.dataset.face = card.face;
       return;
     }
-    
-    // ★ 通常の裏表
-    const next = card.face === "front" ? "back" : "front";
-    card.face = next;
-    el.dataset.face = next;
-    applyFaceClass(el);
+
+    // 通常カード
+    card.face = (card.face === "front") ? "back" : "front";
+    const img = (card.face === "front") ? card.image : card.back;
+    el.style.backgroundImage = `url(${img})`;
+    el.dataset.face = card.face;
   });
 }
 
+
 function applyFaceClass(el) {
-  const type = el.dataset.type;
-  const face = el.dataset.face;
+  const card = cards[el.id];
 
-  el.classList.remove("front","back","territory-front","territory-back");
+  if (card.type === "normal") {
+    const img = (card.face === "front") ? card.image : card.back;
+    el.style.backgroundImage = `url(${img})`;
+  }
 
-  if (type === "territory") {
-    el.classList.add(face === "front" ? "territory-front" : "territory-back");
-  } else {
-    el.classList.add(face === "front" ? "front" : "back");
+  if (card.type === "territory") {
+    const img = (card.face === "front") ? card.imageOpen : card.imageClose;
+    el.style.backgroundImage = `url(${img})`;
   }
 }
+
 
 function enablePreview(el) {
   el.addEventListener("mouseenter", () => {
