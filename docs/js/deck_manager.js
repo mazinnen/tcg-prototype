@@ -24,6 +24,11 @@ async function initWorkAndDeckUI() {
     workList.appendChild(opt);
   });
 
+  // ★ 初回だけデッキを自動登録
+  for (const w of works) {
+    await preloadDecks(w.id);
+  }
+
   // 作品選択時にデッキ一覧を更新
   workList.addEventListener("change", async () => {
     const workId = workList.value;
@@ -49,7 +54,6 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   layoutAllZones();
 });
 
-
   // 初期作品のデッキ一覧を表示
   if (works.length > 0) {
     await updateDeckListUI(works[0].id);
@@ -69,4 +73,41 @@ async function updateDeckListUI(workId) {
       opt.textContent = d.name;
       deckList.appendChild(opt);
     });
+}
+
+// ★ 初回だけデッキを自動登録する
+async function preloadDecks(workId) {
+  const existing = await dbGetAll("decks");
+
+  // すでにこの作品のデッキが登録されていたら何もしない
+  if (existing.some(d => d.workId === workId)) return;
+
+  // data/works/<workId>/decks/ 以下の decklist を読み込む
+  // 今は decklist1.json のみ対応（必要なら増やせる）
+  const url = `data/works/${workId}/decks/decklist1.json`;
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    console.warn(`デッキが見つかりません: ${url}`);
+    return;
+  }
+
+  const deckJson = await res.json();
+
+  await addDeck(workId, deckJson.deckName, deckJson);
+  console.log(`デッキ登録完了: ${deckJson.deckName}`);
+}
+
+// ★ デッキを IndexedDB に保存する
+async function addDeck(workId, deckName, deckJson) {
+  const deckId = `${workId}_${Date.now()}`;  // 一意のID
+
+  await dbPut("decks", {
+    deckId,
+    workId,
+    name: deckName,
+    data: deckJson
+  });
+
+  console.log(`デッキ保存完了: ${deckName}`);
 }
