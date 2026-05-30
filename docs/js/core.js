@@ -29,7 +29,7 @@ function createAllCards() {
     let img = "";
 
     if (card.type === "normal") {
-      img = (card.face === "front") ? card.image : card.back;
+      img = (card.face === "front") ? card.image : card.backImage;
     }
 
     if (card.type === "territory") {
@@ -60,7 +60,7 @@ function createAllCards() {
       let img = "";
 
       if (card.type === "normal") {
-        img = (card.face === "front") ? card.image : card.back;
+        img = (card.face === "front") ? card.image : card.backImage;
       }
 
       if (card.type === "territory") {
@@ -282,7 +282,7 @@ function enableFlip(el) {
 
     // 通常カード
     card.face = (card.face === "front") ? "back" : "front";
-    const img = (card.face === "front") ? card.image : card.back;
+    const img = (card.face === "front") ? card.image : card.backImage;
     el.style.backgroundImage = `url(${img})`;
     el.dataset.face = card.face;
   });
@@ -293,7 +293,7 @@ function applyFaceClass(el) {
   const card = cards[el.id];
 
   if (card.type === "normal") {
-    const img = (card.face === "front") ? card.image : card.back;
+    const img = (card.face === "front") ? card.image : card.backImage;
     el.style.backgroundImage = `url(${img})`;
   }
 

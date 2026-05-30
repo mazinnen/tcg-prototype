@@ -75,25 +75,31 @@ document.getElementById("btn-mulligan").addEventListener("click", () => {
 function doMulligan() {
   const handCards = Object.values(cards).filter(c => c.zone === "my-hand");
 
-  // 手札を山札の下に戻す（unshift → push に変更）
+  // 1. 手札を山札の下に戻す
   handCards.forEach(card => {
     card.zone = "my-deck";
-    deckOrder.push(card.id); // ★ 山札の下に戻す
+    deckOrder.push(card.id); // ★ 下に戻す
   });
 
-  // 手札の DOM を消す
+  // 手札 DOM をクリア
   document.getElementById("my-hand").innerHTML = "";
 
-  // 山札をシャッフル
-  shuffleDeck();
+  // ★ DOM と deckOrder のズレを防ぐため、カードDOMを作り直す
+  document.querySelectorAll(".card").forEach(el => el.remove());
+  createAllCards();
 
-  // 引き直し
-  for (let i = 0; i < 5; i++) drawCard();
+  // 2. 上から5枚引く（引き直し）
+  for (let i = 0; i < 5; i++) {
+    drawCard();
+  }
 
   layoutAllZones();
 
-  // ライフとエナジーを再配置
+  // 3. ライフ・エナジーをセット（シャッフル前）
   setupLifeAndEnergy();
+
+  // 4. 最後に山札をシャッフル
+  shuffleDeck();
 }
 
 
@@ -129,7 +135,7 @@ function setupLifeAndEnergy() {
 
     const el = document.getElementById(uid);
     el.dataset.face = "back"; // ★ 裏向き
-    el.style.backgroundImage = `url(${card.back})`;
+    el.style.backgroundImage = `url(${card.backImage})`;
 
     yellowZone.appendChild(el);
   }
@@ -142,7 +148,7 @@ function setupLifeAndEnergy() {
 
     const el = document.getElementById(uid);
     el.dataset.face = "back"; // ★ 裏向き
-    el.style.backgroundImage = `url(${card.back})`;
+    el.style.backgroundImage = `url(${card.backImage})`;
 
     redZone.appendChild(el);
   }

@@ -41,7 +41,7 @@ async function initDeckFromList(deckJson, carddata, workId) {
         text: carddata[id].text,
         cardType: carddata[id].type,
         image: `data/img/${workId}/${id}.png`,  // ★ 自動生成
-        back: `data/img/card-back.png`
+        backImage: `data/img/card-back.png`
       };
     }
   });
