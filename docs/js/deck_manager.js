@@ -1,22 +1,66 @@
-// deck_manager.js
+// deck_manager.js — デッキデータ管理（IndexedDB）
 
+/* ---------------------------------------------------------
+   IndexedDB 基本操作
+--------------------------------------------------------- */
+async function dbGetAll(store) {
+  return new Promise(resolve => {
+    const req = db.transaction([store], "readonly").objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result);
+  });
+}
+
+async function dbGet(store, key) {
+  return new Promise(resolve => {
+    const req = db.transaction([store], "readonly").objectStore(store).get(key);
+    req.onsuccess = () => resolve(req.result);
+  });
+}
+
+async function dbPut(store, value) {
+  return new Promise(resolve => {
+    const req = db.transaction([store], "readwrite").objectStore(store).put(value);
+    req.onsuccess = () => resolve();
+  });
+}
+
+async function dbDelete(store, key) {
+  return new Promise(resolve => {
+    const req = db.transaction([store], "readwrite").objectStore(store).delete(key);
+    req.onsuccess = () => resolve();
+  });
+}
+
+/* ---------------------------------------------------------
+   デッキ追加
+--------------------------------------------------------- */
+async function addDeck(workId, name, data) {
+  const deckId = crypto.randomUUID();
+  await dbPut("decks", { deckId, workId, name, data });
+}
+
+/* ---------------------------------------------------------
+   作品一覧＋デッキ一覧の初期化
+--------------------------------------------------------- */
 async function initWorkAndDeckUI() {
-  await openDB();
+  const workList = document.getElementById("work-list");
 
-  // 作品一覧を読み込む（works.json）
-  const worksRes = await fetch("data/works.json");
-  const worksJson = await worksRes.json();
-
-  // IndexedDB に作品一覧を保存（初回のみ）
-  for (const w of worksJson.works) {
-    await dbPut("works", w);
+  let works;
+  try {
+    const worksRes = await fetch("data/works.json");
+    works = await worksRes.json();
+  } catch (e) {
+    console.error("works.json の読み込みに失敗:", e);
+    return;
   }
 
-  const workList = document.getElementById("work-list");
-  const deckList = document.getElementById("deck-list");
+  if (!Array.isArray(works)) {
+    console.error("works.json が配列ではありません:", works);
+    return;
+  }
 
-  // 作品一覧を UI に反映
-  const works = await dbGetAll("works");
+  // 作品一覧を select に追加
+  workList.innerHTML = "";
   works.forEach(w => {
     const opt = document.createElement("option");
     opt.value = w.id;
@@ -24,90 +68,34 @@ async function initWorkAndDeckUI() {
     workList.appendChild(opt);
   });
 
-  // ★ 初回だけデッキを自動登録
-  for (const w of works) {
-    await preloadDecks(w.id);
-  }
+  // 最初の作品のデッキ一覧を表示
+  await updateDeckListUI(workList.value);
 
-  // 作品選択時にデッキ一覧を更新
-  workList.addEventListener("change", async () => {
-    const workId = workList.value;
-    await updateDeckListUI(workId);
+  // 作品変更時にデッキ一覧を更新
+  workList.addEventListener("change", () => {
+    updateDeckListUI(workList.value);
   });
-
-  // デッキ読み込みボタン
-document.getElementById("load-deck").addEventListener("click", async () => {
-  const workId = workList.value;
-  const deckId = deckList.value;
-
-  const deck = await dbGet("decks", deckId);
-  if (!deck) return alert("デッキが見つかりません");
-
-  // 作品の carddata.json を読み込む
-  const cardRes = await fetch(`data/works/${workId}/carddata.json`);
-  const carddata = await cardRes.json();
-
-  // 山札構築
-  await initDeckFromList(deck.data, carddata, workId);
-
-  createAllCards();
-  layoutAllZones();
-});
-
-  // 初期作品のデッキ一覧を表示
-  if (works.length > 0) {
-    await updateDeckListUI(works[0].id);
-  }
 }
 
+/* ---------------------------------------------------------
+   デッキ一覧（select 用 option を生成）
+--------------------------------------------------------- */
 async function updateDeckListUI(workId) {
   const deckList = document.getElementById("deck-list");
   deckList.innerHTML = "";
 
   const decks = await dbGetAll("decks");
-  decks
-    .filter(d => d.workId === workId)
-    .forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = d.deckId;
-      opt.textContent = d.name;
-      deckList.appendChild(opt);
-    });
-}
+  const filtered = decks.filter(d => d.workId === workId);
 
-// ★ 初回だけデッキを自動登録する
-async function preloadDecks(workId) {
-  const existing = await dbGetAll("decks");
-
-  // すでにこの作品のデッキが登録されていたら何もしない
-  if (existing.some(d => d.workId === workId)) return;
-
-  // data/works/<workId>/decks/ 以下の decklist を読み込む
-  // 今は decklist1.json のみ対応（必要なら増やせる）
-  const url = `data/works/${workId}/decks/decklist1.json`;
-  const res = await fetch(url);
-
-  if (!res.ok) {
-    console.warn(`デッキが見つかりません: ${url}`);
-    return;
-  }
-
-  const deckJson = await res.json();
-
-  await addDeck(workId, deckJson.deckName, deckJson);
-  console.log(`デッキ登録完了: ${deckJson.deckName}`);
-}
-
-// ★ デッキを IndexedDB に保存する
-async function addDeck(workId, deckName, deckJson) {
-  const deckId = `${workId}_${Date.now()}`;  // 一意のID
-
-  await dbPut("decks", {
-    deckId,
-    workId,
-    name: deckName,
-    data: deckJson
+  filtered.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d.deckId;
+    opt.textContent = d.name;
+    deckList.appendChild(opt);
   });
 
-  console.log(`デッキ保存完了: ${deckName}`);
+  // 初期選択（solo.js が拾えるように）
+  if (filtered.length > 0) {
+    deckList.value = filtered[0].deckId;
+  }
 }

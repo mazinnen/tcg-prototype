@@ -78,8 +78,6 @@ function createAllCards() {
     });
 }
 
-
-
 // --- レイアウト ---
 function layoutAllZones() {
   ZONES.forEach((z) => layoutZone(z));
@@ -359,14 +357,15 @@ function resetZones() {
   const zones = [
     "my-deck", "my-hand", "my-energy", "my-life",
     "my-yellow", "my-red", "my-territory",
-    "my-drop", "my-remove",
-    "op-deck", "op-hand", "op-field"
+    "my-drop", "my-remove"
   ];
 
   zones.forEach(id => {
     const zone = document.getElementById(id);
-    if (zone) zone.innerHTML = "";
-  });
+    if (!zone) return;
 
-  console.log("全ゾーンをリセットしました");
+    // ★ カードだけ消す
+    zone.querySelectorAll(".card").forEach(el => el.remove());
+  });
 }
+

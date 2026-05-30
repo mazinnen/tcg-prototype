@@ -106,3 +106,29 @@ function shuffleDeck() {
   }
   console.log("デッキをシャッフルしました");
 }
+
+// deck.js — デッキ操作（シャッフル・ドロー）
+
+function drawCard() {
+  if (deckOrder.length === 0) return;
+
+  const uid = deckOrder.pop();
+  const card = cards[uid];
+
+  // ゾーン更新
+  card.zone = "my-hand";
+  card.face = "front"; // ドロー時は必ず表
+
+  // DOM 更新
+  const el = document.getElementById(uid);
+  if (!el) {
+    console.error("drawCard: DOM にカードが存在しません:", uid);
+    return;
+  }
+
+  el.dataset.face = "front";
+  el.style.backgroundImage = `url(${card.image})`;
+
+  // 手札へ移動
+  document.getElementById("my-hand").appendChild(el);
+}

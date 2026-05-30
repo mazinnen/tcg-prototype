@@ -3,9 +3,14 @@
     "territory": "BTR2-035",
     "cards": [
         { "id": "BTR-015", "count": 4 },
+        { "id": "BTR-060", "count": 4 },
+        { "id": "BTR-071", "count": 4 },
         { "id": "BTR2-013", "count": 4 },
+        { "id": "BTR2-017", "count": 4 },
+        { "id": "BTR2-021", "count": 4 },
         { "id": "BTR2-029", "count": 4 },
         { "id": "BTR2-030", "count": 4 },
+        { "id": "BTR2-034", "count": 4 },
         { "id": "BTR2-039", "count": 4 }
   ]
 }
