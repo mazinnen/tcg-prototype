@@ -16,7 +16,7 @@ async function initDeckFromList(deckJson, carddata, workId) {
     face: "back",
     type: "territory",
     name: territoryId,
-    text: "",
+    text: carddata[territoryId].text,
     imageOpen:  `data/img/${workId}/${territoryId}_O.png`,
     imageClose: `data/img/${workId}/${territoryId}_C.png`
   };

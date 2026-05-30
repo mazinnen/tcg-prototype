@@ -312,19 +312,22 @@ function enablePreview(el) {
     const img = panel.querySelector(".detail-image");
     const text = panel.querySelector(".detail-text");
 
-    const bg = window.getComputedStyle(el).backgroundImage;
+    const card = cards[el.id];
 
-    img.style.backgroundImage = bg;
+    img.style.backgroundImage = `url(${card.image || card.imageOpen})`;
     img.style.backgroundSize = "contain";
     img.style.backgroundRepeat = "no-repeat";
     img.style.backgroundPosition = "center";
-
-    text.textContent =
-      `ダミーテキスト\n\n` +
-      `これはカード「${el.id}」の説明文です。\n` +
-      `実際のテキスト管理を始めたら、ここに効果やフレーバーを表示します。`;
+    text.textContent = card.text || "テキストなし";
   });
 }
+
+cardElement.addEventListener("mouseenter", () => {
+  const card = cards[cardElement.id];
+
+  detailImage.style.backgroundImage = `url(${card.image})`;
+  detailTextArea.textContent = card.text || "テキストなし";
+});
 
 // --- スケール ---
 function autoScale() {
