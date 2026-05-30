@@ -75,21 +75,27 @@ document.getElementById("btn-mulligan").addEventListener("click", () => {
 function doMulligan() {
   const handCards = Object.values(cards).filter(c => c.zone === "my-hand");
 
+  // 手札を山札の下に戻す（unshift → push に変更）
   handCards.forEach(card => {
     card.zone = "my-deck";
-    deckOrder.unshift(card.id);
+    deckOrder.push(card.id); // ★ 山札の下に戻す
   });
 
-  document.getElementById("my-hand").querySelectorAll(".card").forEach(el => el.remove());
+  // 手札の DOM を消す
+  document.getElementById("my-hand").innerHTML = "";
 
+  // 山札をシャッフル
   shuffleDeck();
 
+  // 引き直し
   for (let i = 0; i < 5; i++) drawCard();
 
   layoutAllZones();
 
+  // ライフとエナジーを再配置
   setupLifeAndEnergy();
 }
+
 
 /* ---------------------------------------------------------
    対戦開始
@@ -106,30 +112,39 @@ function doStartBattle() {
    ライフ（黄5 / 赤5）＋エナジー（2）配置
 --------------------------------------------------------- */
 function setupLifeAndEnergy() {
-  // 5 → イエロー
+  const yellowZone = document.getElementById("my-yellow");
+  const redZone = document.getElementById("my-red");
+  const energyZone = document.getElementById("my-energy");
+
+  // 既存カードをクリア
+  yellowZone.innerHTML = "";
+  redZone.innerHTML = "";
+  energyZone.innerHTML = "";
+
+  // 5 → イエロー（裏向き）
   for (let i = 0; i < 5; i++) {
     const uid = deckOrder.pop();
     const card = cards[uid];
     card.zone = "my-yellow";
 
     const el = document.getElementById(uid);
-    el.dataset.face = "front";
-    el.style.backgroundImage = `url(${card.image})`;
+    el.dataset.face = "back"; // ★ 裏向き
+    el.style.backgroundImage = `url(${card.back})`;
 
-    document.getElementById("my-yellow").appendChild(el);
+    yellowZone.appendChild(el);
   }
 
-  // 5 → レッド
+  // 5 → レッド（裏向き）
   for (let i = 0; i < 5; i++) {
     const uid = deckOrder.pop();
     const card = cards[uid];
     card.zone = "my-red";
 
     const el = document.getElementById(uid);
-    el.dataset.face = "front";
-    el.style.backgroundImage = `url(${card.image})`;
+    el.dataset.face = "back"; // ★ 裏向き
+    el.style.backgroundImage = `url(${card.back})`;
 
-    document.getElementById("my-red").appendChild(el);
+    redZone.appendChild(el);
   }
 
   // 2 → エナジー（表向き）
@@ -139,11 +154,12 @@ function setupLifeAndEnergy() {
     card.zone = "my-energy";
 
     const el = document.getElementById(uid);
-    el.dataset.face = "front";
+    el.dataset.face = "front"; // ★ 表向き
     el.style.backgroundImage = `url(${card.image})`;
 
-    document.getElementById("my-energy").appendChild(el);
+    energyZone.appendChild(el);
   }
 
   layoutAllZones();
 }
+

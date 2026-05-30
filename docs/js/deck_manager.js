@@ -50,13 +50,13 @@ async function initWorkAndDeckUI() {
   workList.innerHTML = "";
   works.forEach(w => {
     const opt = document.createElement("option");
-    opt.value = w.id;
-    opt.textContent = w.name;
+    opt.value = w.id;     // ★ 作品ID
+    opt.textContent = w.name; // ★ 作品名
     workList.appendChild(opt);
   });
 
   if (works.length > 0) {
-    updateDeckListUI(works[0].id);
+    await updateDeckListUI(works[0].id); // ★ 最初の作品のデッキ一覧を表示
   }
 
   workList.addEventListener("change", () => {
@@ -76,13 +76,13 @@ async function updateDeckListUI(workId) {
 
   filtered.forEach(d => {
     const opt = document.createElement("option");
-    opt.value = d.deckId;
-    opt.textContent = d.name;
+    opt.value = d.deckId;   // ★ デッキID
+    opt.textContent = d.name; // ★ デッキ名
     deckList.appendChild(opt);
   });
 
-  // 初期選択（solo.js が拾えるように）
   if (filtered.length > 0) {
     deckList.value = filtered[0].deckId;
   }
 }
+
