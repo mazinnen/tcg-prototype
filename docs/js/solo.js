@@ -49,9 +49,6 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   createAllCards();
   layoutAllZones();
 
-  // 右クリックで peek を付与
-  attachDeckRightClick();
-
   // 初期5ドロー
   initialDraw();
 });
