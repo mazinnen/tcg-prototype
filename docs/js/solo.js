@@ -9,7 +9,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   await openDB();
   await initWorkAndDeckUI(); // deck_manager.js
 
-  attachDeckRightClick(); // ← ここに移動（1回だけ）
+  attachDeckRightClick();
+  attachStackRightClick();
   selectedDeckId = document.getElementById("deck-list").value;
 });
 
@@ -174,6 +175,28 @@ function attachDeckRightClick() {
     openDeckPeekInput();
   });
 }
+
+/* ---------------------------------------------------------
+   山札右クリック → stack
+--------------------------------------------------------- */
+function attachStackRightClick() {
+  ["my-drop", "my-remove"].forEach(zoneId => {
+    const zone = document.getElementById(zoneId);
+
+    zone.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+
+      // ゾーン内のカードIDを取得
+      const ids = Array.from(zone.querySelectorAll(".card"))
+        .map(el => el.id);
+
+      if (ids.length > 0) {
+        openStackDialog(ids); // ★ ここで使う
+      }
+    });
+  });
+}
+
 
 /* ---------------------------------------------------------
    peek ダイアログ
