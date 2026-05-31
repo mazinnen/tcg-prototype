@@ -1,87 +1,77 @@
-// core.js
+// core.js — UI基盤（DOM生成・レイアウト・ドラッグ・回転・反転・プレビュー）
 
-// --- カード状態 ---
-const cards = {};
-let deckOrder = [];
-
+// ZONE 定義
 const ZONES = [
   "my-deck","my-hand","my-field","my-energy",
   "my-yellow","my-red","my-remove","my-drop","my-territory"
 ];
 
 const COUNT_ZONES = [
-  "my-deck","my-hand","my-yellow","my-red",
-  "my-energy","my-remove","my-drop"
+  "my-deck","my-hand","my-field","my-energy",
+  "my-yellow","my-red","my-remove","my-drop"
 ];
 
-// --- カード生成 ---
+/* ---------------------------------------------------------
+   DOM生成（cards{} の内容を元に1回だけ生成）
+--------------------------------------------------------- */
 function createAllCards() {
-  // ★ デッキは deckOrder の順番で生成
-  deckOrder.forEach(uid => {
-    const card = cards[uid];
-    const el = document.createElement("div");
-    el.className = "card";
-    el.id = card.id;
-    el.dataset.face = card.face;
-    el.dataset.type = card.type;
-    el.dataset.rotated = "0";
-
-    let img = "";
-
-    if (card.type === "normal") {
-      img = (card.face === "front") ? card.image : card.backImage;
-    }
-
-    if (card.type === "territory") {
-      img = (card.face === "front") ? card.imageOpen : card.imageClose;
-    }
-
-    el.style.backgroundImage = `url(${img})`;
-
-    document.getElementById(card.zone).appendChild(el);
-
-    enableDrag(el);
-    enableRotate(el);
-    enableFlip(el);
-    enablePreview(el);
+  // ZONES 内のカードだけ削除
+  ZONES.forEach(zoneId => {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    zone.querySelectorAll(".card").forEach(el => el.remove());
   });
 
-  // ★ デッキ以外のカード（テリトリーなど）
-  Object.values(cards)
+  const allCards = getAllCards();
+  const order = getDeckOrder(); // ★ deckOrder を取得
+
+  // ★ まず deckOrder の順番で山札を生成
+  order.forEach(uid => {
+    const card = allCards[uid];
+    const el = createCardElement(card);
+    document.getElementById("my-deck").appendChild(el);
+  });
+
+  // ★ 次に deck 以外のカードを生成
+  Object.values(allCards)
     .filter(c => c.zone !== "my-deck")
     .forEach(card => {
-      const el = document.createElement("div");
-      el.className = "card";
-      el.id = card.id;
-      el.dataset.face = card.face;
-      el.dataset.type = card.type;
-      el.dataset.rotated = "0";
-
-      let img = "";
-
-      if (card.type === "normal") {
-        img = (card.face === "front") ? card.image : card.backImage;
-      }
-
-      if (card.type === "territory") {
-        img = (card.face === "front") ? card.imageOpen : card.imageClose;
-      }
-
-      el.style.backgroundImage = `url(${img})`;
-
+      const el = createCardElement(card);
       document.getElementById(card.zone).appendChild(el);
-
-      enableDrag(el);
-      enableRotate(el);
-      enableFlip(el);
-      enablePreview(el);
     });
 }
 
-// --- レイアウト ---
+function createCardElement(card) {
+  const el = document.createElement("div");
+  el.className = "card";
+  el.id = card.id;
+  el.dataset.face = card.face;
+  el.dataset.type = card.type;
+  el.dataset.rotated = "0";
+
+  // ★ card.face をそのまま使う（勝手に front/back にしない）
+  const img = (card.type === "territory")
+    ? (card.face === "front" ? card.imageOpen : card.imageClose)
+    : (card.face === "front" ? card.image : card.backImage);
+
+  el.style.backgroundImage = `url(${img})`;
+
+  enableDrag(el);
+  enableRotate(el);
+  enableFlip(el);
+  enablePreview(el);
+
+  return el;
+}
+
+
+
+/* ---------------------------------------------------------
+   レイアウト
+--------------------------------------------------------- */
 function layoutAllZones() {
-  ZONES.forEach((z) => layoutZone(z));
-  COUNT_ZONES.forEach((z) => updateZoneCount(z));
+  ZONES.forEach(z => layoutZone(z));
+  COUNT_ZONES.forEach(z => updateZoneCount(z));
 }
 
 function layoutZone(zoneId) {
@@ -90,11 +80,11 @@ function layoutZone(zoneId) {
 
   // 山札・ドロップ・リムーブ
   if (["my-deck","my-drop","my-remove"].includes(zoneId)) {
-    list.forEach((el) => {
+    list.forEach(el => {
       el.style.left = "8px";
       el.style.top = "30px";
     });
-    updateZoneCount(zoneId);
+    //updateZoneCount(zoneId);
     return;
   }
 
@@ -104,7 +94,7 @@ function layoutZone(zoneId) {
       el.style.left = `${8 + i * 20}px`;
       el.style.top = "30px";
     });
-    updateZoneCount(zoneId);
+    //updateZoneCount(zoneId);
     return;
   }
 
@@ -114,7 +104,7 @@ function layoutZone(zoneId) {
       el.style.left = `${8 + i * 48}px`;
       el.style.top = "30px";
     });
-    updateZoneCount(zoneId);
+    //updateZoneCount(zoneId);
     return;
   }
 
@@ -124,7 +114,7 @@ function layoutZone(zoneId) {
       el.style.left = `${8 + i * 118}px`;
       el.style.top = "30px";
     });
-    updateZoneCount(zoneId);
+    //updateZoneCount(zoneId);
     return;
   }
 
@@ -159,7 +149,9 @@ function updateZoneCount(zoneId) {
   countEl.textContent = zone.querySelectorAll(".card").length;
 }
 
-// --- 通常ドラッグ（ゾーン移動） ---
+/* ---------------------------------------------------------
+   ドラッグ（ゾーン移動）
+--------------------------------------------------------- */
 function enableDrag(el) {
   let isDragging = false;
   let offsetX = 0, offsetY = 0;
@@ -172,7 +164,7 @@ function enableDrag(el) {
     const rect = el.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
-    originalZone = cards[el.id].zone;
+    originalZone = getCardData(el.id).zone;
 
     isDragging = true;
 
@@ -189,39 +181,53 @@ function enableDrag(el) {
     el.style.top = `${e.clientY - offsetY}px`;
   });
 
-  document.addEventListener("mouseup", (e) => {
-    if (!isDragging) return;
-    isDragging = false;
+document.addEventListener("mouseup", (e) => {
+  if (!isDragging) return;
+  isDragging = false;
 
-    const dropZone = detectDropZone(e.clientX, e.clientY);
-    let targetZoneId = dropZone ? dropZone.id : originalZone;
+  const dropZone = detectDropZone(e.clientX, e.clientY);
+  let targetZoneId = dropZone ? dropZone.id : originalZone;
 
-    const id = el.id;
-    cards[id].zone = targetZoneId;
+  const card = getCardData(el.id);
+  card.zone = targetZoneId;
 
-    document.getElementById(targetZoneId).appendChild(el);
+  document.getElementById(targetZoneId).appendChild(el);
 
-    if (!["my-field","my-energy"].includes(targetZoneId)) {
-      el.style.transform = "rotate(0deg)";
-      el.dataset.rotated = "0";
-    }
+  /* --------------------------------------------
+     ★ 山札 → 他ゾーン：deckOrder から削除
+  -------------------------------------------- */
+  if (originalZone === "my-deck" && targetZoneId !== "my-deck") {
+    const order = getDeckOrder();
+    const idx = order.indexOf(el.id);
+    if (idx !== -1) order.splice(idx, 1);
+  }
 
-    if (["my-yellow","my-red","my-deck"].includes(targetZoneId)) {
-      cards[id].face = "back";
-    } else {
-      cards[id].face = "front";
-    }
-    el.dataset.face = cards[id].face;
+  /* --------------------------------------------
+     ★ 他ゾーン → 山札：deckOrder に追加
+  -------------------------------------------- */
+  if (originalZone !== "my-deck" && targetZoneId === "my-deck") {
+    const order = getDeckOrder();
+    order.push(el.id); // 山札の上に戻す
+    card.face = "back";
+    el.dataset.face = "back";
     applyFaceClass(el);
+  }
 
-    el.style.position = "absolute";
-    el.style.zIndex = 1;
+  // 裏表処理（山札は常に裏）
+  if (["my-yellow","my-red","my-deck"].includes(targetZoneId)) {
+    card.face = "back";
+  } else {
+    card.face = "front";
+  }
+  el.dataset.face = card.face;
+  applyFaceClass(el);
 
-    layoutZone(originalZone);
-    layoutZone(targetZoneId);
-    if (COUNT_ZONES.includes(originalZone)) updateZoneCount(originalZone);
-    if (COUNT_ZONES.includes(targetZoneId)) updateZoneCount(targetZoneId);
-  });
+  el.style.position = "absolute";
+  el.style.zIndex = 1;
+
+  layoutZone(originalZone);
+  layoutZone(targetZoneId);
+});
 }
 
 function detectDropZone(x, y) {
@@ -234,75 +240,56 @@ function detectDropZone(x, y) {
   return null;
 }
 
-// --- 回転・反転・プレビュー ---
+/* ---------------------------------------------------------
+   回転・反転・プレビュー
+--------------------------------------------------------- */
 function enableRotate(el) {
   let rotateTarget = null;
 
   el.addEventListener("mousedown", (e) => {
-    if (e.button === 2) { // 右クリック
-      rotateTarget = el; // ★ このカードだけ回転対象にする
-    }
+    if (e.button === 2) rotateTarget = el;
   });
 
   el.addEventListener("contextmenu", (e) => {
-    const zoneId = cards[el.id].zone;
+    const card = getCardData(el.id);
+    const zoneId = card.zone;
     if (!["my-field","my-energy"].includes(zoneId)) return;
-    
+
     e.preventDefault();
 
-    // ★ rotateTarget が自分のときだけ回転
     if (rotateTarget !== el) return;
 
     const rotated = el.dataset.rotated === "1";
     el.style.transform = rotated ? "rotate(0deg)" : "rotate(90deg)";
     el.dataset.rotated = rotated ? "0" : "1";
-    
-    rotateTarget = null; // リセット
+
+    rotateTarget = null;
   });
 }
 
 function enableFlip(el) {
   el.addEventListener("contextmenu", (e) => {
-    const card = cards[el.id];
+    const card = getCardData(el.id);
     const zoneId = card.zone;
 
-    // 裏表切替が許可されるゾーン
-    if (!["my-yellow","my-red","my-territory","my-life"].includes(zoneId)) return;
+    if (!["my-yellow","my-red","my-territory"].includes(zoneId)) return;
 
     e.preventDefault();
 
-    // テリトリー
-    if (card.type === "territory") {
-      card.face = (card.face === "front") ? "back" : "front";
-      const img = (card.face === "front") ? card.imageOpen : card.imageClose;
-      el.style.backgroundImage = `url(${img})`;
-      el.dataset.face = card.face;
-      return;
-    }
-
-    // 通常カード
     card.face = (card.face === "front") ? "back" : "front";
-    const img = (card.face === "front") ? card.image : card.backImage;
-    el.style.backgroundImage = `url(${img})`;
-    el.dataset.face = card.face;
+    applyFaceClass(el);
   });
 }
 
-
 function applyFaceClass(el) {
-  const card = cards[el.id];
+  const card = getCardData(el.id);
 
-  if (card.type === "normal") {
-    const img = (card.face === "front") ? card.image : card.backImage;
-    el.style.backgroundImage = `url(${img})`;
-  }
+  const img = (card.type === "territory")
+    ? (card.face === "front" ? card.imageOpen : card.imageClose)
+    : (card.face === "front" ? card.image : card.backImage);
 
-  if (card.type === "territory") {
-    const img = (card.face === "front") ? card.imageOpen : card.imageClose;
-    el.style.backgroundImage = `url(${img})`;
-  }
+  el.style.backgroundImage = `url(${img})`;
 }
-
 
 function enablePreview(el) {
   el.addEventListener("mouseenter", () => {
@@ -312,7 +299,7 @@ function enablePreview(el) {
     const img = panel.querySelector(".detail-image");
     const text = panel.querySelector(".detail-text");
 
-    const card = cards[el.id];
+    const card = getCardData(el.id);
 
     img.style.backgroundImage = `url(${card.image || card.imageOpen})`;
     img.style.backgroundSize = "contain";
@@ -322,53 +309,23 @@ function enablePreview(el) {
   });
 }
 
-cardElement.addEventListener("mouseenter", () => {
-  const card = cards[cardElement.id];
-
-  detailImage.style.backgroundImage = `url(${card.image})`;
-  detailTextArea.textContent = card.text || "テキストなし";
-});
-
-// --- スケール ---
-function autoScale() {
-  const wrapper = document.getElementById("board-wrapper");
-  wrapper.style.transform = "scale(1)";
-  const rect = wrapper.getBoundingClientRect();
-
-  const scale = Math.min(
-    window.innerWidth / (rect.width + 40),
-    window.innerHeight / (rect.height + 40)
-  );
-
-  wrapper.style.transform = `scale(${scale})`;
-}
-
+/* ---------------------------------------------------------
+   リセット（deckOrder は消さない）
+--------------------------------------------------------- */
 function resetAllCards() {
-  // 全カード DOM を削除
-  document.querySelectorAll(".card").forEach(el => el.remove());
+  ZONES.forEach(zoneId => {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    zone.querySelectorAll(".card").forEach(el => el.remove());
+  });
 
-  // 全カードデータを削除
   for (const k in cards) delete cards[k];
-
-  // デッキ順もクリア
-  deckOrder = [];
-
-  console.log("全カードをリセットしました");
 }
 
 function resetZones() {
-  const zones = [
-    "my-deck", "my-hand", "my-energy", "my-life",
-    "my-yellow", "my-red", "my-territory",
-    "my-drop", "my-remove"
-  ];
-
-  zones.forEach(id => {
+  ZONES.forEach(id => {
     const zone = document.getElementById(id);
     if (!zone) return;
-
-    // ★ カードだけ消す
     zone.querySelectorAll(".card").forEach(el => el.remove());
   });
 }
-
