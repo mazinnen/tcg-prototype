@@ -15,24 +15,28 @@ const COUNT_ZONES = [
    DOM生成（cards{} の内容を元に1回だけ生成）
 --------------------------------------------------------- */
 function createAllCards() {
-  // ZONES 内のカードだけ削除
+  // まず全ゾーンのカード DOM を削除
   ZONES.forEach(zoneId => {
     const zone = document.getElementById(zoneId);
-    if (!zone) return;
     zone.querySelectorAll(".card").forEach(el => el.remove());
   });
 
   const allCards = getAllCards();
-  const order = getDeckOrder(); // ★ deckOrder を取得
+  const order = getDeckOrder();
 
-  // ★ まず deckOrder の順番で山札を生成
+  /* --------------------------------------------
+     ① 山札は deckOrder の順番で生成
+  -------------------------------------------- */
   order.forEach(uid => {
     const card = allCards[uid];
     const el = createCardElement(card);
     document.getElementById("my-deck").appendChild(el);
   });
 
-  // ★ 次に deck 以外のカードを生成
+  /* --------------------------------------------
+     ② 山札以外のカードをゾーンごとに生成
+        ※ DOM の順番が layoutZone の並び順になる
+  -------------------------------------------- */
   Object.values(allCards)
     .filter(c => c.zone !== "my-deck")
     .forEach(card => {
@@ -64,8 +68,6 @@ function createCardElement(card) {
   return el;
 }
 
-
-
 /* ---------------------------------------------------------
    レイアウト
 --------------------------------------------------------- */
@@ -84,7 +86,6 @@ function layoutZone(zoneId) {
       el.style.left = "8px";
       el.style.top = "30px";
     });
-    //updateZoneCount(zoneId);
     return;
   }
 
@@ -94,7 +95,6 @@ function layoutZone(zoneId) {
       el.style.left = `${8 + i * 20}px`;
       el.style.top = "30px";
     });
-    //updateZoneCount(zoneId);
     return;
   }
 
@@ -104,7 +104,6 @@ function layoutZone(zoneId) {
       el.style.left = `${8 + i * 48}px`;
       el.style.top = "30px";
     });
-    //updateZoneCount(zoneId);
     return;
   }
 
@@ -114,7 +113,6 @@ function layoutZone(zoneId) {
       el.style.left = `${8 + i * 118}px`;
       el.style.top = "30px";
     });
-    //updateZoneCount(zoneId);
     return;
   }
 
