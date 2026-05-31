@@ -225,6 +225,9 @@ document.addEventListener("mouseup", (e) => {
 
   layoutZone(originalZone);
   layoutZone(targetZoneId);
+  
+  updateZoneCount(originalZone);
+  updateZoneCount(targetZoneId);
 });
 }
 
