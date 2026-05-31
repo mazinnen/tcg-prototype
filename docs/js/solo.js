@@ -226,7 +226,8 @@ function openDeckPeekDialog(cardIds) {
     clone.dataset.cardId = id;
     clone.style.backgroundImage = `url(${card.image})`;
 
-    enableDialogDrag(clone); // ★ 新しいドラッグ処理
+    //enableDialogDrag(clone); // ★ 新しいドラッグ処理
+    enablePeekDrag(clone);
 
     list.appendChild(clone);
   });
@@ -275,6 +276,7 @@ function enableDialogDrag(clone) {
 
     // ★ ダイアログ内 → 並び替え成立 → 位置リセットしない
     if (!leftDialog) {
+      updateDeckOrderFromPeek();
       clone.style.position = "";
       clone.style.left = "";
       clone.style.top = "";
@@ -297,6 +299,25 @@ function enableDialogDrag(clone) {
     clone.style.top = "";
     clone.style.zIndex = "";
   });
+}
+
+function updateDeckOrderFromPeek() {
+  const list = document.getElementById("deck-peek-list");
+  const clones = Array.from(list.children);
+
+  // ★ clone の並び順に従って deckOrder を更新
+  const newOrder = clones.map(clone => clone.dataset.cardId);
+
+  // ★ deckOrder の末尾が山札の上なので逆順にする
+  const order = getDeckOrder();
+
+  // deckOrder の末尾 count 枚を newOrder に置き換える
+  const count = newOrder.length;
+  const remain = order.slice(0, order.length - count);
+
+  const updated = remain.concat(newOrder.reverse());
+
+  setDeckOrder(updated);
 }
 
 function moveCardToZone(real, zoneId) {
@@ -392,6 +413,83 @@ document.getElementById("stack-close").addEventListener("click", () => {
 
   document.getElementById("stack-dialog").classList.add("hidden");
 });
+
+function enablePeekDrag(clone) {
+  const list = document.getElementById("deck-peek-list");
+  let dragging = false;
+  let leftDialog = false;
+
+  clone.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging = true;
+    leftDialog = false;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+
+    // まだダイアログ内 → 並び替えモード
+    if (isInsideDialog(e.clientX, e.clientY)) {
+      leftDialog = false;
+
+      const clones = Array.from(list.children);
+      const x = e.clientX;
+
+      // どの位置に挿入するか決める
+      let target = null;
+      for (const c of clones) {
+        const rect = c.getBoundingClientRect();
+        const center = (rect.left + rect.right) / 2;
+        if (x < center) {
+          target = c;
+          break;
+        }
+      }
+      if (target && target !== clone) {
+        list.insertBefore(clone, target);
+      } else if (!target) {
+        list.appendChild(clone);
+      }
+      return;
+    }
+
+    // ダイアログ外に出た → 移動モード
+    leftDialog = true;
+    clone.style.position = "absolute";
+    clone.style.zIndex = 9999;
+    clone.style.left = (e.pageX - clone.offsetWidth / 2) + "px";
+    clone.style.top = (e.pageY - clone.offsetHeight / 2) + "px";
+  });
+
+  document.addEventListener("mouseup", (e) => {
+    if (!dragging) return;
+    dragging = false;
+
+    const id = clone.dataset.cardId;
+    const real = document.getElementById(id);
+
+    if (!leftDialog) {
+      // 並び替え確定 → deckOrder 更新
+      updateDeckOrderFromPeek();
+      return;
+    }
+
+    // ダイアログ外 → ゾーン移動
+    const dropZone = detectDropZone(e.clientX, e.clientY);
+    if (dropZone) {
+      moveCardToZone(real, dropZone.id);
+      clone.remove();
+      return;
+    }
+
+    // どこにも落ちてない → 元に戻す
+    clone.style.position = "";
+    clone.style.left = "";
+    clone.style.top = "";
+    clone.style.zIndex = "";
+  });
+}
 
 function isInsideDialog(x, y) {
   const lists = [
