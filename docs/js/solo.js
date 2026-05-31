@@ -40,7 +40,7 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   }
 
   // カードデータ読み込み
-  const cardRes = await fetch(`data/works/${workId}/carddata.json`);
+  const cardRes = await fetch(`data/cards.json`);
   const carddata = await cardRes.json();
 
   // deck.js → デッキ構築（deckOrder 初期化＋シャッフル）
