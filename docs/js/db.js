@@ -1,94 +1,80 @@
-// db.js — IndexedDB のみを担当する完全整理版
+// ===============================
+// IndexedDB Wrapper
+// ===============================
 
 const DB_NAME = "tcg-db";
 const DB_VERSION = 1;
+
 let db = null;
 
-/* ---------------------------------------------------------
-   DB を開く（初回は stores を作成）
---------------------------------------------------------- */
-function openDB() {
+// DB を開く
+export function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
+    request.onupgradeneeded = (e) => {
+      db = e.target.result;
 
-      // 作品一覧
-      if (!db.objectStoreNames.contains("works")) {
-        db.createObjectStore("works", { keyPath: "id" });
+      // カードキャッシュ
+      if (!db.objectStoreNames.contains("cards")) {
+        db.createObjectStore("cards");
       }
 
-      // デッキ一覧
+      // デッキ保存用
       if (!db.objectStoreNames.contains("decks")) {
-        db.createObjectStore("decks", { keyPath: "id" });
+        db.createObjectStore("decks");
       }
     };
 
-    req.onsuccess = (e) => {
+    request.onsuccess = (e) => {
       db = e.target.result;
       resolve();
     };
 
-    req.onerror = (e) => {
-      console.error("IndexedDB open error:", e);
-      reject(e);
-    };
+    request.onerror = (e) => reject(e);
   });
 }
 
-/* ---------------------------------------------------------
-   汎用：get
---------------------------------------------------------- */
-function dbGet(storeName, key) {
+// 汎用：取得
+export function dbGet(store, key) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([storeName], "readonly");
-    const store = tx.objectStore(storeName);
-    const req = store.get(key);
+    const tx = db.transaction(store, "readonly");
+    const req = tx.objectStore(store).get(key);
 
-    req.onsuccess = () => resolve(req.result || null);
-    req.onerror = (e) => reject(e);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = reject;
   });
 }
 
-/* ---------------------------------------------------------
-   汎用：getAll
---------------------------------------------------------- */
-function dbGetAll(storeName) {
+// 汎用：保存
+export function dbPut(store, value, key) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([storeName], "readonly");
-    const store = tx.objectStore(storeName);
-    const req = store.getAll();
+    const tx = db.transaction(store, "readwrite");
+    tx.objectStore(store).put(value, key);
 
-    req.onsuccess = () => resolve(req.result || []);
-    req.onerror = (e) => reject(e);
+    tx.oncomplete = resolve;
+    tx.onerror = reject;
   });
 }
 
-/* ---------------------------------------------------------
-   汎用：put（追加 or 上書き）
---------------------------------------------------------- */
-function dbPut(storeName, data) {
+// 汎用：削除
+export function dbDelete(store, key) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([storeName], "readwrite");
-    const store = tx.objectStore(storeName);
-    const req = store.put(data);
+    const tx = db.transaction(store, "readwrite");
+    tx.objectStore(store).delete(key);
 
-    req.onsuccess = () => resolve();
-    req.onerror = (e) => reject(e);
+    tx.oncomplete = resolve;
+    tx.onerror = reject;
   });
 }
 
-/* ---------------------------------------------------------
-   汎用：delete
---------------------------------------------------------- */
-function dbDelete(storeName, key) {
+// 汎用：全件取得
+export function dbGetAll(store) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([storeName], "readwrite");
-    const store = tx.objectStore(storeName);
-    const req = store.delete(key);
+    const tx = db.transaction(store, "readonly");
+    const req = tx.objectStore(store).getAll();
 
-    req.onsuccess = () => resolve();
-    req.onerror = (e) => reject(e);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = reject;
   });
 }
