@@ -206,49 +206,121 @@ function openDeckPeekInput() {
   const count = parseInt(n);
   if (!count || count <= 0) return;
 
-  openDeckPeekDialog(count);
+  const order = getDeckOrder();
+
+  // ★ デッキの上から count 枚を取得（末尾が上）
+  const ids = order.slice(-count).reverse();
+
+  openDeckPeekDialog(ids);
 }
 
-function openDeckPeekDialog(count) {
+function openDeckPeekDialog(cardIds) {
   const list = document.getElementById("deck-peek-list");
   list.innerHTML = "";
 
-  const peekIds = peekDeck(count); // deck.js
-
-  peekIds.forEach(id => {
+  cardIds.forEach(id => {
     const card = getCardData(id);
 
-    const el = document.createElement("div");
-    el.classList.add("peek-card");
-    el.dataset.cardId = id;
-    el.style.backgroundImage = `url(${card.image})`;
+    const clone = document.createElement("div");
+    clone.classList.add("peek-card");
+    clone.dataset.cardId = id;
+    clone.style.backgroundImage = `url(${card.image})`;
 
-    list.appendChild(el);
+    enableDialogDrag(clone); // ★ 新しいドラッグ処理
+
+    list.appendChild(clone);
   });
 
-  makeDeckPeekSortable();
   document.getElementById("deck-peek-dialog").classList.remove("hidden");
 }
 
-function makeDeckPeekSortable() {
-  const zone = document.getElementById("deck-peek-list");
-  let dragEl = null;
+function enableDialogDrag(clone) {
+  let offsetX = 0;
+  let offsetY = 0;
+  let dragging = false;
+  let leftDialog = false;
 
-  zone.querySelectorAll(".peek-card").forEach(el => {
-    el.draggable = true;
+  clone.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-    el.addEventListener("dragstart", () => {
-      dragEl = el;
-    });
+    dragging = true;
+    leftDialog = false;
 
-    el.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      const target = e.target.closest(".peek-card");
-      if (target && target !== dragEl) {
-        zone.insertBefore(dragEl, target);
-      }
-    });
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+
+    clone.style.position = "absolute";
+    clone.style.zIndex = 9999;
   });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+
+    clone.style.left = (e.pageX - offsetX) + "px";
+    clone.style.top = (e.pageY - offsetY) + "px";
+
+    // ★ ダイアログ外に出た瞬間だけ true にする
+    if (!isInsideDialog(e.clientX, e.clientY)) {
+      leftDialog = true;
+    }
+  });
+
+  document.addEventListener("mouseup", (e) => {
+    if (!dragging) return;
+    dragging = false;
+
+    const id = clone.dataset.cardId;
+    const real = document.getElementById(id);
+
+    // ★ ダイアログ内 → 並び替え成立 → 位置リセットしない
+    if (!leftDialog) {
+      clone.style.position = "";
+      clone.style.left = "";
+      clone.style.top = "";
+      clone.style.zIndex = "";
+      return;
+    }
+
+    // ★ ダイアログ外 → ゾーン移動
+    const dropZone = detectDropZone(e.clientX, e.clientY);
+
+    if (dropZone) {
+      moveCardToZone(real, dropZone.id);
+      clone.remove(); // ダイアログから消す
+      return;
+    }
+
+    // ★ ダイアログ外だがゾーンに落ちていない → 元に戻す
+    clone.style.position = "";
+    clone.style.left = "";
+    clone.style.top = "";
+    clone.style.zIndex = "";
+  });
+}
+
+function moveCardToZone(real, zoneId) {
+  const card = getCardData(real.id);
+
+  const originalZone = card.zone;
+  card.zone = zoneId;
+
+  document.getElementById(zoneId).appendChild(real);
+
+  // 裏表制御
+  if (["my-yellow","my-red","my-deck"].includes(zoneId)) {
+    card.face = "back";
+  } else {
+    card.face = "front";
+  }
+  real.dataset.face = card.face;
+  applyFaceClass(real);
+
+  layoutZone(originalZone);
+  layoutZone(zoneId);
+
+  updateZoneCount(originalZone);
+  updateZoneCount(zoneId);
 }
 
 /* ---------------------------------------------------------
@@ -294,17 +366,47 @@ function openStackDialog(cardIds) {
   cardIds.forEach(id => {
     const card = getCardData(id);
 
-    const el = document.createElement("div");
-    el.classList.add("peek-card");
-    el.style.backgroundImage = `url(${card.image})`;
+    const clone = document.createElement("div");
+    clone.classList.add("peek-card");
+    clone.dataset.cardId = id;
+    clone.style.backgroundImage = `url(${card.image})`;
 
-    list.appendChild(el);
+    enableDialogDrag(clone);
+
+    list.appendChild(clone);
   });
 
   document.getElementById("stack-dialog").classList.remove("hidden");
 }
 
 document.getElementById("stack-close").addEventListener("click", () => {
+  const list = document.getElementById("stack-list");
+  const cards = Array.from(list.querySelectorAll(".card"));
+
+  cards.forEach(el => {
+    const card = getCardData(el.id);
+    const zone = document.getElementById(card.zone);
+    zone.appendChild(el);
+    el.classList.remove("peek-card");
+  });
+
   document.getElementById("stack-dialog").classList.add("hidden");
-  document.getElementById("stack-list").innerHTML = "";
 });
+
+function isInsideDialog(x, y) {
+  const lists = [
+    document.getElementById("deck-peek-list"),
+    document.getElementById("stack-list")
+  ];
+
+  return lists.some(list => {
+    if (!list) return false;
+    const rect = list.getBoundingClientRect();
+    return (
+      x >= rect.left &&
+      x <= rect.right &&
+      y >= rect.top &&
+      y <= rect.bottom
+    );
+  });
+}
