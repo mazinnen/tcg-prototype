@@ -247,8 +247,7 @@ function applyPeekReturn(toTop) {
   applyPeekOrder(ids, toTop); // deck.js（deckOrder 更新）
 
   // ★ DOM を deckOrder に合わせて再生成
-  createAllCards();
-  //layoutAllZones();
+  syncDeckDomWithOrder();
 
   document.getElementById("deck-peek-dialog").classList.add("hidden");
   zone.innerHTML = "";

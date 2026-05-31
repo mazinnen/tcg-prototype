@@ -68,6 +68,17 @@ function createCardElement(card) {
   return el;
 }
 
+function syncDeckDomWithOrder() {
+  const deck = document.getElementById("my-deck");
+  const order = getDeckOrder();
+
+  // DOM を deckOrder の順番に並び替える
+  order.forEach(uid => {
+    const el = document.getElementById(uid);
+    if (el) deck.appendChild(el);
+  });
+}
+
 /* ---------------------------------------------------------
    レイアウト
 --------------------------------------------------------- */
