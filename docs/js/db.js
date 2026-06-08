@@ -7,6 +7,12 @@ const DB_VERSION = 1;
 
 let db = null;
 
+window.openDB = openDB;
+window.dbGet = dbGet;
+window.dbPut = dbPut;
+window.dbDelete = dbDelete;
+window.dbGetAll = dbGetAll;
+
 // DB を開く
 export function openDB() {
   return new Promise((resolve, reject) => {

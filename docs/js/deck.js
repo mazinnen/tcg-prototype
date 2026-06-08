@@ -123,3 +123,8 @@ function getCardData(uid) {
 function getAllCards() {
   return cards;
 }
+
+window.initDeckFromList = initDeckFromList;
+window.drawCard = drawCard;
+window.getCardData = getCardData;
+window.getAllCards = getAllCards;

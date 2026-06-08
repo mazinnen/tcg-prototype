@@ -800,6 +800,421 @@
       "name": "",
       "type": "",
       "text": ""
+    },
+    "GNO-001": {
+      "name": "テリトリー",
+      "type": "始点",
+      "text": ""
+    },
+    "GNO-002": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-003": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-004": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-005": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-006": {
+      "name": "",
+      "type": "宇宙開拓時代の英雄 ジョナス",
+      "text": ""
+    },
+    "GNO-007": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-008": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-009": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-010": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-011": {
+      "name": "",
+      "type": "宇宙管制官 ジナ",
+      "text": ""
+    },
+    "GNO-012": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-013": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-014": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-015": {
+      "name": "",
+      "type": "星舟の巫女 夕里子",
+      "text": ""
+    },
+    "GNO-016": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-017": {
+      "name": "",
+      "type": "グノーシアの勝利",
+      "text": ""
+    },
+    "GNO-018": {
+      "name": "",
+      "type": "狂える神々",
+      "text": ""
+    },
+    "GNO-019": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-020": {
+      "name": "",
+      "type": "信頼の計り方",
+      "text": ""
+    },
+    "GNO-021": {
+      "name": "",
+      "type": "「土下座する」",
+      "text": ""
+    },
+    "GNO-022": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-023": {
+      "name": "",
+      "type": "わくわく! 人間牧場",
+      "text": ""
+    },
+    "GNO-024": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-025": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-026": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-027": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-028": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-029": {
+      "name": "",
+      "type": "軍人 セツ",
+      "text": ""
+    },
+    "GNO-030": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-031": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-032": {
+      "name": "",
+      "type": "知性至上主義者 ラキオ",
+      "text": ""
+    },
+    "GNO-033": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-034": {
+      "name": "",
+      "type": "猫になりたい青年 シピ",
+      "text": ""
+    },
+    "GNO-035": {
+      "name": "",
+      "type": "夢見る端末 ステラ",
+      "text": ""
+    },
+    "GNO-036": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-037": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-038": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-039": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-040": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-041": {
+      "name": "",
+      "type": "必死の弁明",
+      "text": ""
+    },
+    "GNO-042": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-043": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-044": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-045": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-046": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-047": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-048": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-049": {
+      "name": "",
+      "type": "ゲーム談義 レムナン",
+      "text": ""
+    },
+    "GNO-050": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-051": {
+      "name": "",
+      "type": "知性化シロイルカ オトメ",
+      "text": ""
+    },
+    "GNO-052": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-053": {
+      "name": "",
+      "type": "内気な青年 レムナン",
+      "text": ""
+    },
+    "GNO-054": {
+      "name": "",
+      "type": "ラーメン宇宙 しげみち",
+      "text": ""
+    },
+    "GNO-055": {
+      "name": "",
+      "type": "リトルグレイ? しげみち",
+      "text": ""
+    },
+    "GNO-056": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-057": {
+      "name": "",
+      "type": "しげみちの恋",
+      "text": ""
+    },
+    "GNO-058": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-059": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-060": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-061": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-062": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-063": {
+      "name": "",
+      "type": "グノーシア SQ",
+      "text": ""
+    },
+    "GNO-064": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-065": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-066": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-067": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-068": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-069": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-070": {
+      "name": "",
+      "type": "懐かしい君に花冠を ククルシカ",
+      "text": ""
+    },
+    "GNO-071": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-072": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-073": {
+      "name": "",
+      "type": "野生の勘 コメット",
+      "text": ""
+    },
+    "GNO-074": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-075": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-076": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-077": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-078": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-079": {
+      "name": "",
+      "type": "逃れえぬ過去",
+      "text": ""
+    },
+    "GNO-080": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-081": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-082": {
+      "name": "",
+      "type": "",
+      "text": ""
+    },
+    "GNO-083": {
+      "name": "",
+      "type": "",
+      "text": ""
     }
   }
 }

@@ -1,31 +1,10 @@
-// solo.js — 一人回しモード（DB版・peek/stack 完全版）
-
-let selectedDeckId = null;
+// solo.js — ゲームロジック専用（グローバル関数利用）
 
 /* ---------------------------------------------------------
-   初期化：DB → 作品一覧 → デッキ一覧
---------------------------------------------------------- */
-window.addEventListener("DOMContentLoaded", async () => {
-  await openDB();
-  await initWorkAndDeckUI(); // deck_manager.js
-
-  attachDeckRightClick();
-  attachStackRightClick();
-  selectedDeckId = document.getElementById("deck-list").value;
-});
-
-/* ---------------------------------------------------------
-   デッキ選択
---------------------------------------------------------- */
-document.getElementById("deck-list").addEventListener("change", () => {
-  selectedDeckId = document.getElementById("deck-list").value;
-});
-
-/* ---------------------------------------------------------
-   デッキ読み込み
+   デッキ読み込み（solo_main.js が selectedDeckId を管理）
 --------------------------------------------------------- */
 document.getElementById("load-deck").addEventListener("click", async () => {
-  if (!selectedDeckId) {
+  if (!window.selectedDeckId) {
     alert("デッキを選択してください");
     return;
   }
@@ -33,17 +12,16 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   const workId = document.getElementById("work-list").value;
 
   // DB からデッキ取得
-  const deck = await dbGet("decks", selectedDeckId);
+  const deck = await dbGet("decks", window.selectedDeckId);
   if (!deck) {
     alert("デッキが見つかりません");
     return;
   }
 
-  // カードデータ読み込み
-  const cardRes = await fetch(`data/cards.json`);
-  const carddata = await cardRes.json();
+  // ★ Excel（Google Sheets）からカードデータを取得
+  const carddata = await loadCards();  // ← これが正しい
 
-  // deck.js → デッキ構築（deckOrder 初期化＋シャッフル）
+  // デッキ構築
   await initDeckFromList(deck.data, carddata, workId);
 
   // DOM生成
@@ -54,12 +32,13 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   initialDraw();
 });
 
+
 /* ---------------------------------------------------------
    初期5ドロー
 --------------------------------------------------------- */
 function initialDraw() {
   for (let i = 0; i < 5; i++) {
-    const uid = drawCard(); // deck.js
+    const uid = drawCard();
     if (!uid) continue;
 
     const card = getCardData(uid);
@@ -175,6 +154,7 @@ function attachDeckRightClick() {
     openDeckPeekInput();
   });
 }
+attachDeckRightClick();
 
 /* ---------------------------------------------------------
    山札右クリック → stack
@@ -186,17 +166,16 @@ function attachStackRightClick() {
     zone.addEventListener("contextmenu", (e) => {
       e.preventDefault();
 
-      // ゾーン内のカードIDを取得
       const ids = Array.from(zone.querySelectorAll(".card"))
         .map(el => el.id);
 
       if (ids.length > 0) {
-        openStackDialog(ids); // ★ ここで使う
+        openStackDialog(ids);
       }
     });
   });
 }
-
+attachStackRightClick();
 
 /* ---------------------------------------------------------
    peek ダイアログ
