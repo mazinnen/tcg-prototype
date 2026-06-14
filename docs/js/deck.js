@@ -48,7 +48,7 @@ async function initDeckFromList(deckJson, carddata, workId) {
         text: carddata[id].text,
         cardType: carddata[id].type,
         image: `data/img/${workId}/${id}.png`,
-        backImage: `data/img/card-back.png`
+        backImage: `data/img/bd-back.png`
       };
     }
   });

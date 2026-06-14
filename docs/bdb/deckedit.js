@@ -1,7 +1,7 @@
 import {
   addDeck, updateDeck, deleteDeck,
   getDeck, getDecksByWork
-} from "./deck_manager.js";
+} from "../js/deck_manager.js";
 
 let works = [];
 let cards = {};
@@ -10,8 +10,8 @@ let filteredCards = [];
 
 window.addEventListener("DOMContentLoaded", async () => {
   await openDB();
-  works = await loadWorks();
-  cards = await loadCards();
+  works = await loadWorks("BDB");
+  cards = await loadCards("BDB");
 
   initWorkSelector(works);
   initEvents();

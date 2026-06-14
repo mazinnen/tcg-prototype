@@ -1,15 +1,15 @@
 // solo_main.js — 一人回しモード 初期化担当（ES Module）
 
-import { openDB } from "./db.js";
-import { getDecksByWork } from "./deck_manager.js";
-import "./solo.js"; // ゲームロジック（ES Module）
+import { openDB } from "../js/db.js";
+import { getDecksByWork } from "../js/deck_manager.js";
+import "../js/solo.js"; // ゲームロジック（ES Module）
 
 window.addEventListener("DOMContentLoaded", async () => {
   // IndexedDB オープン
   await openDB();
 
   // 作品一覧ロード（Excel → GAS）
-  const works = await loadWorks();
+  const works = await loadWorks("BDB");
 
   // UI 初期化
   initWorkSelector(works);
