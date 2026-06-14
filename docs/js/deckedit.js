@@ -92,16 +92,21 @@ function renderCardList() {
 
 function addCardFromList(cardId) {
   const deck = collectDeckFromUI();
-  const existing = deck.cards.find(c => c.id === cardId);
+
+  // 新形式 or 旧形式どちらでも動く
+  const cardList = deck.data?.cards ?? deck.cards;
+
+  const existing = cardList.find(c => c.id === cardId);
 
   if (existing) {
     existing.count += 1;
   } else {
-    deck.cards.push({ id: cardId, count: 1 });
+    cardList.push({ id: cardId, count: 1 });
   }
 
-  renderCardTable(deck.cards);
+  renderCardTable(cardList);
 }
+
 
 async function updateDeckList() {
   const workId = document.getElementById("work-select").value;
@@ -137,12 +142,13 @@ async function loadDeckToUI() {
   const deck = await getDeck(deckId);
   if (!deck) return;
 
-  document.getElementById("deck-name").value = deck.name;
-  //document.getElementById("territory").value = deck.territory || "";
-  document.getElementById("territory-select").value = deck.territory || "";
+  // 新形式 or 旧形式どちらでも動くようにする
+  const data = deck.data ?? deck;
 
-  renderCardTable(deck.cards);
-  
+  document.getElementById("deck-name").value = deck.name;
+  document.getElementById("territory-select").value = data.territory || "";
+
+  renderCardTable(data.cards || []);
 }
 
 // ----------------------------
@@ -201,10 +207,12 @@ function collectDeckFromUI() {
   });
 
   return {
-    work: document.getElementById("work-select").value,
     name: document.getElementById("deck-name").value,
-    territory: document.getElementById("territory-select").value, // ← 修正
-    cards
+    work: document.getElementById("work-select").value,
+    data: {
+      territory: document.getElementById("territory-select").value,
+      cards
+    }
   };
 }
 

@@ -1,10 +1,18 @@
-// solo.js — ゲームロジック専用（グローバル関数利用）
+// solo.js — 一人回しモード ゲームロジック（ES Module）
+
+// 右クリック系は DOM 構築後に張る
+window.addEventListener("DOMContentLoaded", () => {
+  attachDeckRightClick();
+  attachStackRightClick();
+});
 
 /* ---------------------------------------------------------
-   デッキ読み込み（solo_main.js が selectedDeckId を管理）
+   デッキ読み込み
 --------------------------------------------------------- */
 document.getElementById("load-deck").addEventListener("click", async () => {
-  if (!window.selectedDeckId) {
+  const selectedDeckId = window.selectedDeckId;
+
+  if (!selectedDeckId) {
     alert("デッキを選択してください");
     return;
   }
@@ -12,16 +20,16 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   const workId = document.getElementById("work-list").value;
 
   // DB からデッキ取得
-  const deck = await dbGet("decks", window.selectedDeckId);
+  const deck = await dbGet("decks", selectedDeckId);
   if (!deck) {
     alert("デッキが見つかりません");
     return;
   }
 
-  // ★ Excel（Google Sheets）からカードデータを取得
-  const carddata = await loadCards();  // ← これが正しい
+  // Excel（GAS）からカードデータ取得
+  const carddata = await loadCards();
 
-  // デッキ構築
+  // deck.js → デッキ構築（deckOrder 初期化＋シャッフル）
   await initDeckFromList(deck.data, carddata, workId);
 
   // DOM生成
@@ -31,7 +39,6 @@ document.getElementById("load-deck").addEventListener("click", async () => {
   // 初期5ドロー
   initialDraw();
 });
-
 
 /* ---------------------------------------------------------
    初期5ドロー
@@ -148,13 +155,13 @@ function setupLifeAndEnergy() {
 --------------------------------------------------------- */
 function attachDeckRightClick() {
   const deckZone = document.getElementById("my-deck");
+  if (!deckZone) return;
 
   deckZone.addEventListener("contextmenu", (e) => {
     e.preventDefault();
     openDeckPeekInput();
   });
 }
-attachDeckRightClick();
 
 /* ---------------------------------------------------------
    山札右クリック → stack
@@ -162,6 +169,7 @@ attachDeckRightClick();
 function attachStackRightClick() {
   ["my-drop", "my-remove"].forEach(zoneId => {
     const zone = document.getElementById(zoneId);
+    if (!zone) return;
 
     zone.addEventListener("contextmenu", (e) => {
       e.preventDefault();
@@ -175,7 +183,6 @@ function attachStackRightClick() {
     });
   });
 }
-attachStackRightClick();
 
 /* ---------------------------------------------------------
    peek ダイアログ
@@ -186,8 +193,6 @@ function openDeckPeekInput() {
   if (!count || count <= 0) return;
 
   const order = getDeckOrder();
-
-  // ★ デッキの上から count 枚を取得（末尾が上）
   const ids = order.slice(-count).reverse();
 
   openDeckPeekDialog(ids);
@@ -205,7 +210,6 @@ function openDeckPeekDialog(cardIds) {
     clone.dataset.cardId = id;
     clone.style.backgroundImage = `url(${card.image})`;
 
-    //enableDialogDrag(clone); // ★ 新しいドラッグ処理
     enablePeekDrag(clone);
 
     list.appendChild(clone);
@@ -214,88 +218,17 @@ function openDeckPeekDialog(cardIds) {
   document.getElementById("deck-peek-dialog").classList.remove("hidden");
 }
 
-function enableDialogDrag(clone) {
-  let offsetX = 0;
-  let offsetY = 0;
-  let dragging = false;
-  let leftDialog = false;
-
-  clone.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    dragging = true;
-    leftDialog = false;
-
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
-
-    clone.style.position = "absolute";
-    clone.style.zIndex = 9999;
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!dragging) return;
-
-    clone.style.left = (e.pageX - offsetX) + "px";
-    clone.style.top = (e.pageY - offsetY) + "px";
-
-    // ★ ダイアログ外に出た瞬間だけ true にする
-    if (!isInsideDialog(e.clientX, e.clientY)) {
-      leftDialog = true;
-    }
-  });
-
-  document.addEventListener("mouseup", (e) => {
-    if (!dragging) return;
-    dragging = false;
-
-    const id = clone.dataset.cardId;
-    const real = document.getElementById(id);
-
-    // ★ ダイアログ内 → 並び替え成立 → 位置リセットしない
-    if (!leftDialog) {
-      updateDeckOrderFromPeek();
-      clone.style.position = "";
-      clone.style.left = "";
-      clone.style.top = "";
-      clone.style.zIndex = "";
-      return;
-    }
-
-    // ★ ダイアログ外 → ゾーン移動
-    const dropZone = detectDropZone(e.clientX, e.clientY);
-
-    if (dropZone) {
-      moveCardToZone(real, dropZone.id);
-      clone.remove(); // ダイアログから消す
-      return;
-    }
-
-    // ★ ダイアログ外だがゾーンに落ちていない → 元に戻す
-    clone.style.position = "";
-    clone.style.left = "";
-    clone.style.top = "";
-    clone.style.zIndex = "";
-  });
-}
-
 function updateDeckOrderFromPeek() {
   const list = document.getElementById("deck-peek-list");
   const clones = Array.from(list.children);
 
-  // ★ clone の並び順に従って deckOrder を更新
   const newOrder = clones.map(clone => clone.dataset.cardId);
-
-  // ★ deckOrder の末尾が山札の上なので逆順にする
   const order = getDeckOrder();
 
-  // deckOrder の末尾 count 枚を newOrder に置き換える
   const count = newOrder.length;
   const remain = order.slice(0, order.length - count);
 
   const updated = remain.concat(newOrder.reverse());
-
   setDeckOrder(updated);
 }
 
@@ -307,7 +240,6 @@ function moveCardToZone(real, zoneId) {
 
   document.getElementById(zoneId).appendChild(real);
 
-  // 裏表制御
   if (["my-yellow","my-red","my-deck"].includes(zoneId)) {
     card.face = "back";
   } else {
@@ -339,9 +271,7 @@ function applyPeekReturn(toTop) {
   const els = Array.from(zone.querySelectorAll(".peek-card"));
   const ids = els.map(el => el.dataset.cardId);
 
-  applyPeekOrder(ids, toTop); // deck.js（deckOrder 更新）
-
-  // ★ DOM を deckOrder に合わせて再生成
+  applyPeekOrder(ids, toTop);
   syncDeckDomWithOrder();
 
   document.getElementById("deck-peek-dialog").classList.add("hidden");
@@ -393,6 +323,9 @@ document.getElementById("stack-close").addEventListener("click", () => {
   document.getElementById("stack-dialog").classList.add("hidden");
 });
 
+/* ---------------------------------------------------------
+   peek 用ドラッグ
+--------------------------------------------------------- */
 function enablePeekDrag(clone) {
   const list = document.getElementById("deck-peek-list");
   let dragging = false;
@@ -408,14 +341,12 @@ function enablePeekDrag(clone) {
   document.addEventListener("mousemove", (e) => {
     if (!dragging) return;
 
-    // まだダイアログ内 → 並び替えモード
     if (isInsideDialog(e.clientX, e.clientY)) {
       leftDialog = false;
 
       const clones = Array.from(list.children);
       const x = e.clientX;
 
-      // どの位置に挿入するか決める
       let target = null;
       for (const c of clones) {
         const rect = c.getBoundingClientRect();
@@ -433,7 +364,6 @@ function enablePeekDrag(clone) {
       return;
     }
 
-    // ダイアログ外に出た → 移動モード
     leftDialog = true;
     clone.style.position = "absolute";
     clone.style.zIndex = 9999;
@@ -449,12 +379,10 @@ function enablePeekDrag(clone) {
     const real = document.getElementById(id);
 
     if (!leftDialog) {
-      // 並び替え確定 → deckOrder 更新
       updateDeckOrderFromPeek();
       return;
     }
 
-    // ダイアログ外 → ゾーン移動
     const dropZone = detectDropZone(e.clientX, e.clientY);
     if (dropZone) {
       moveCardToZone(real, dropZone.id);
@@ -462,7 +390,68 @@ function enablePeekDrag(clone) {
       return;
     }
 
-    // どこにも落ちてない → 元に戻す
+    clone.style.position = "";
+    clone.style.left = "";
+    clone.style.top = "";
+    clone.style.zIndex = "";
+  });
+}
+
+function enableDialogDrag(clone) {
+  let offsetX = 0;
+  let offsetY = 0;
+  let dragging = false;
+  let leftDialog = false;
+
+  clone.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    dragging = true;
+    leftDialog = false;
+
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+
+    clone.style.position = "absolute";
+    clone.style.zIndex = 9999;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+
+    clone.style.left = (e.pageX - offsetX) + "px";
+    clone.style.top = (e.pageY - offsetY) + "px";
+
+    if (!isInsideDialog(e.clientX, e.clientY)) {
+      leftDialog = true;
+    }
+  });
+
+  document.addEventListener("mouseup", (e) => {
+    if (!dragging) return;
+    dragging = false;
+
+    const id = clone.dataset.cardId;
+    const real = document.getElementById(id);
+
+    if (!leftDialog) {
+      updateDeckOrderFromPeek();
+      clone.style.position = "";
+      clone.style.left = "";
+      clone.style.top = "";
+      clone.style.zIndex = "";
+      return;
+    }
+
+    const dropZone = detectDropZone(e.clientX, e.clientY);
+
+    if (dropZone) {
+      moveCardToZone(real, dropZone.id);
+      clone.remove();
+      return;
+    }
+
     clone.style.position = "";
     clone.style.left = "";
     clone.style.top = "";

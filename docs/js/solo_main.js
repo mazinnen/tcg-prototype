@@ -1,14 +1,18 @@
+// solo_main.js — 一人回しモード 初期化担当（ES Module）
+
 import { openDB } from "./db.js";
-import { loadWorks, loadCards } from "./loaders.js";
+import { loadWorks } from "./loaders.js";
 import { getDecksByWork } from "./deck_manager.js";
-import "./solo.js"; // ゲームロジック
+import "./solo.js"; // ゲームロジック（ES Module）
 
 window.addEventListener("DOMContentLoaded", async () => {
-  await openDB(); // グローバル関数として呼べる
+  // IndexedDB オープン
+  await openDB();
 
+  // 作品一覧ロード（Excel → GAS）
   const works = await loadWorks();
-  const cards = await loadCards();
 
+  // UI 初期化
   initWorkSelector(works);
   initDeckSelector();
 });
@@ -47,14 +51,14 @@ async function initDeckSelector() {
     deckSel.appendChild(opt);
   });
 
-  // ★ 初期選択を反映
+  // 初期選択を反映
   if (decks.length > 0) {
     window.selectedDeckId = decks[0].deckId;
   } else {
     window.selectedDeckId = null;
   }
 
-  // ★ change イベントで更新
+  // change で選択デッキを更新
   deckSel.addEventListener("change", () => {
     window.selectedDeckId = deckSel.value;
   });
