@@ -1,5 +1,3 @@
-import { openDB } from "./db.js";
-import { loadWorks, loadCards } from "./loaders.js";
 import {
   addDeck, updateDeck, deleteDeck,
   getDeck, getDecksByWork
@@ -225,8 +223,10 @@ function initEvents() {
     const deckId = await addDeck({
       work,
       name: "新規デッキ",
-      territory: "",
-      cards: []
+      data: {
+        territory: "",
+        cards: []
+      }
     });
 
     currentDeckId = deckId;
@@ -240,26 +240,7 @@ function initEvents() {
     updateDeckList();
   });
 
-  document.getElementById("add-card-btn").addEventListener("click", () => {
-    const id = document.getElementById("card-id-input").value.trim();
-    const count = Number(document.getElementById("card-count-input").value);
-
-    if (!id || !cards[id]) {
-      alert("カードIDが不正です");
-      return;
-    }
-
-    const deck = collectDeckFromUI();
-    const existing = deck.cards.find(c => c.id === id);
-
-    if (existing) {
-      existing.count += count;
-    } else {
-      deck.cards.push({ id, count });
-    }
-
-    renderCardTable(deck.cards);
-  });
+  // ★ add-card-btn は削除したのでイベントも削除
 
   document.getElementById("save-deck-btn").addEventListener("click", async () => {
     const deck = collectDeckFromUI();

@@ -5,12 +5,13 @@
     <title>TCG Prototype</title>
     <link rel="stylesheet" href="css/layout.css" />
 
-    <!-- deck.js / core.js / dialog 系は通常スクリプト -->
+    <!-- まず通常スクリプト（順番重要） -->
     <script src="js/db.js"></script>
     <script src="js/deck.js"></script>
     <script src="js/core.js"></script>
+    <script src="js/loaders.js"></script>
 
-    <!-- 初期化は solo_main.js（ES Module） -->
+    <!-- ES Module はこれだけ -->
     <script type="module" src="js/solo_main.js"></script>
   </head>
 

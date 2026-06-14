@@ -1,7 +1,6 @@
 // solo_main.js — 一人回しモード 初期化担当（ES Module）
 
 import { openDB } from "./db.js";
-import { loadWorks } from "./loaders.js";
 import { getDecksByWork } from "./deck_manager.js";
 import "./solo.js"; // ゲームロジック（ES Module）
 
