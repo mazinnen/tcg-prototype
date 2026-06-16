@@ -1,94 +1,55 @@
-// カード画像パス
-export function getCardImagePath(id) {
-  return `../data/img/UA/${id}.png`;
-}
-
-// ===============================
-// カード生成（表裏対応）
-// ===============================
 export function createCard(id, face = "back") {
-  const div = document.createElement("div");
-  div.className = "card";
-  div.dataset.id = id;
-  div.dataset.face = face;
+  const card = document.createElement("div");
+  card.classList.add("card");
+  card.dataset.id = id;
+  card.dataset.face = face;
 
-  // ドラッグ可能
-  div.draggable = true;
-  div.addEventListener("dragstart", onDragStart);
-  div.addEventListener("dragend", onDragEnd);
+  card.draggable = true;
 
-  updateCardImage(div);
-  return div;
-}
-
-// ===============================
-// 表裏切り替え
-// ===============================
-export function flipCard(card) {
-  card.dataset.face = card.dataset.face === "front" ? "back" : "front";
   updateCardImage(card);
+  return card;
 }
 
-// ===============================
-// 画像更新
-// ===============================
-function updateCardImage(card) {
-  if (card.dataset.face === "back") {
-    card.style.backgroundImage = "url('../data/img/back.png')";
+export function updateCardImage(card) {
+  const id = card.dataset.id;
+  const face = card.dataset.face;
+
+  if (face === "back") {
+    card.style.backgroundImage = "url('../data/img/UA/back.png')";
   } else {
-    card.style.backgroundImage = `url('../data/img/UA/${card.dataset.id}.png')`;
+    card.style.backgroundImage = `url('../data/img/UA/${id}.png')`;
   }
 }
 
-// ===============================
-// ドラッグ処理（ここが重要）
-// ===============================
-let draggedCard = null;
-
-function onDragStart(e) {
-  draggedCard = e.target;
-  e.dataTransfer.setData("text/plain", draggedCard.dataset.id);
-  draggedCard.classList.add("dragging");
+export function flipCard(card) {
+  const face = card.dataset.face === "back" ? "front" : "back";
+  card.dataset.face = face;
+  updateCardImage(card);
 }
 
-function onDragEnd(e) {
-  if (draggedCard) draggedCard.classList.remove("dragging");
-  draggedCard = null;
-}
+export function renderStack(zoneId, ids, options = {}) {
+  const zone = document.getElementById(zoneId);
+  zone.innerHTML = "";
+  const face = options.face || "back";
 
-// ===============================
-// ドロップ可能にするヘルパー
-// ===============================
-export function makeDroppable(zone, handler) {
-  zone.addEventListener("dragover", e => e.preventDefault());
-  zone.addEventListener("drop", e => {
-    e.preventDefault();
-    if (!draggedCard) return;
-    handler(draggedCard, zone);
+  ids.forEach(id => {
+    const card = createCard(id, face);
+    zone.appendChild(card);
   });
 }
 
-
-// 重ねゾーン
-export function renderStack(zoneId, arr) {
+export function renderRow(zoneId, ids, options = {}) {
   const zone = document.getElementById(zoneId);
   zone.innerHTML = "";
-  arr.forEach((id, i) => {
-    const c = createCard(id);
-    c.style.setProperty("--i", i);
-    zone.appendChild(c);
+  const face = options.face || "front";
+
+  ids.forEach(id => {
+    const card = createCard(id, face);
+    zone.appendChild(card);
   });
 }
 
-// 横並びゾーン
-export function renderRow(zoneId, arr) {
-  const zone = document.getElementById(zoneId);
-  zone.innerHTML = "";
-  arr.forEach(id => zone.appendChild(createCard(id)));
-}
-
-// カードID取得
 export function getCardId(el) {
-  if (!el.classList.contains("card")) return null;
-  return el.dataset.id;
+  const card = el.closest(".card");
+  return card ? card.dataset.id : null;
 }

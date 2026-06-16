@@ -1,8 +1,7 @@
-import { createCard, makeDroppable, flipCard, renderStack, renderRow, getCardId } from "./ua_core.js";
+import { createCard, flipCard, renderStack, renderRow, getCardId } from "./ua_core.js";
 import { openDB, getAllDecks, getDeck } from "./db.js";
 
 let deck = [];
-
 let deckStack = [];
 let hand = [];
 let front = [];
@@ -19,9 +18,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   await openDB();
   await loadDeckList();
   setupDragEvents();
+  setupLifeFlip();
+  setupDeckPeek();
 });
 
-// ====== デッキ一覧をセレクトに反映 ======
+// ====== デッキ一覧 ======
 async function loadDeckList() {
   const decks = await getAllDecks();
   const sel = document.getElementById("deck-list");
@@ -35,7 +36,7 @@ async function loadDeckList() {
   });
 }
 
-// ====== デッキ読み込みボタン ======
+// ====== デッキ読み込み → ゲーム開始 ======
 document.getElementById("load-deck").onclick = async () => {
   const id = document.getElementById("deck-list").value;
   if (!id) return;
@@ -43,11 +44,10 @@ document.getElementById("load-deck").onclick = async () => {
   const d = await getDeck(Number(id));
   if (!d || !d.cards) return;
 
-  deck = expandDeck(d.cards);   // {id,count} → [id,id,id,...]
-  setupBoard(deck);
+  deck = expandDeck(d.cards);
+  startGame(deck);
 };
 
-// ====== デッキ展開 ======
 function expandDeck(cards) {
   const arr = [];
   cards.forEach(c => {
@@ -56,33 +56,60 @@ function expandDeck(cards) {
   return arr;
 }
 
-// ====== 初期セットアップ ======
-function setupBoard(srcDeck) {
+// ====== ゲーム開始処理 ======
+function startGame(srcDeck) {
   deckStack = [...srcDeck];
+  shuffle(deckStack);
 
-  life = deckStack.splice(0, 7);
-  renderStack("ua-life", life);
-
-  ap = deckStack.splice(0, 3);
-  renderRow("ua-ap", ap);
-
-  hand = [];
-  renderRow("ua-hand", hand);
+  hand = deckStack.splice(0, 7);
+  ap = ["UA_BACK", "UA_BACK", "UA_BACK"];
 
   front = [];
   energy = [];
-  renderRow("front-line", front);
-  renderRow("energy-line", energy);
-
-  renderStack("ua-deck", deckStack);
-
   out = [];
   remove = [];
-  renderStack("ua-out", out);
-  renderStack("ua-remove", remove);
+  life = [];
+
+  renderAll();
+
+  const doMulligan = confirm("マリガンしますか？");
+
+  if (!doMulligan) {
+    life = deckStack.splice(0, 7);
+  } else {
+    deckStack.push(...hand);
+    hand = [];
+
+    hand = deckStack.splice(0, 7);
+
+    shuffle(deckStack);
+    life = deckStack.splice(0, 7);
+  }
+
+  renderAll();
 }
 
-// ====== ドラッグ操作（ua_core の getCardId 前提） ======
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function renderAll() {
+  renderStack("ua-deck", deckStack, { face: "back" });
+  renderStack("ua-life", life, { face: "back" });
+  renderStack("ua-out", out, { face: "back" });
+  renderStack("ua-remove", remove, { face: "back" });
+
+  renderRow("ua-hand", hand, { face: "front" });
+  renderRow("front-line", front, { face: "front" });
+  renderRow("energy-line", energy, { face: "front" });
+
+  renderRow("ua-ap", ap, { face: "back" });
+}
+
+// ====== ドラッグ＆ドロップ ======
 function setupDragEvents() {
   document.addEventListener("mousedown", (e) => {
     const id = getCardId(e.target);
@@ -100,6 +127,10 @@ function setupDragEvents() {
     dragCard = null;
     dragFrom = null;
   });
+
+  document.addEventListener("contextmenu", e => {
+    if (e.target.closest(".card")) e.preventDefault();
+  });
 }
 
 function findArea(id) {
@@ -108,6 +139,7 @@ function findArea(id) {
   if (energy.includes(id)) return "energy";
   if (out.includes(id)) return "out";
   if (remove.includes(id)) return "remove";
+  if (life.includes(id)) return "life";
   return null;
 }
 
@@ -151,14 +183,63 @@ function addTo(area, id) {
 }
 
 function getAreaArray(area) {
-  return { hand, front, energy, out, remove }[area];
+  return { hand, front, energy, out, remove, life }[area];
 }
 
-function renderAll() {
-  renderStack("ua-deck", deckStack);
-  renderRow("ua-hand", hand);
-  renderRow("front-line", front);
-  renderRow("energy-line", energy);
-  renderStack("ua-out", out);
-  renderStack("ua-remove", remove);
+// ====== ライフ反転 ======
+function setupLifeFlip() {
+  const lifeZone = document.getElementById("ua-life");
+  lifeZone.addEventListener("click", e => {
+    const cardEl = e.target.closest(".card");
+    if (!cardEl) return;
+    flipCard(cardEl);
+  });
+}
+
+// ====== 山札 peek ======
+function setupDeckPeek() {
+  const deckZone = document.getElementById("ua-deck");
+  deckZone.addEventListener("contextmenu", e => {
+    e.preventDefault();
+    const n = parseInt(prompt("何枚見ますか？"), 10);
+    if (!n || n <= 0) return;
+
+    const peek = deckStack.slice(0, n);
+    showPeekDialog(peek);
+  });
+}
+
+function showPeekDialog(cards) {
+  const dlg = document.createElement("div");
+  dlg.className = "peek-dialog";
+
+  cards.forEach((id, i) => {
+    const card = createCard(id, "front");
+    card.onclick = () => movePeekCard(i, id, dlg);
+    dlg.appendChild(card);
+  });
+
+  document.body.appendChild(dlg);
+}
+
+function movePeekCard(index, id, dlg) {
+  const dest = prompt("移動先: top / bottom / hand / out / remove");
+
+  const idx = deckStack.indexOf(id);
+  if (idx >= 0) deckStack.splice(idx, 1);
+
+  if (dest === "top") {
+    deckStack.unshift(id);
+  } else if (dest === "bottom") {
+    deckStack.push(id);
+  } else if (dest === "hand") {
+    hand.push(id);
+  } else if (dest === "out") {
+    out.push(id);
+  } else if (dest === "remove") {
+    remove.push(id);
+  }
+
+  dlg.remove();
+  renderAll();
 }

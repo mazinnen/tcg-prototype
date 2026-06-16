@@ -144,7 +144,7 @@ document.getElementById("save-deck").onclick = async () => {
   await openDB();
 
   const name = document.getElementById("deck-name").value.trim();
-  const work = document.getElementById("work").value; // フィルタ中の作品をそのまま保存
+  const work = document.getElementById("work").value;
 
   if (!name) {
     alert("デッキ名を入力してください");
