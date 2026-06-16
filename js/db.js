@@ -1,11 +1,13 @@
 let db = null;
 
-export async function openDB() {
+export function openDB() {
   return new Promise((resolve, reject) => {
+    if (db) return resolve(db);
+
     const req = indexedDB.open("UA_DB", 1);
 
     req.onupgradeneeded = (e) => {
-      db = e.target.result;
+      const db = e.target.result;
       if (!db.objectStoreNames.contains("decks")) {
         db.createObjectStore("decks", { keyPath: "id", autoIncrement: true });
       }
@@ -13,39 +15,64 @@ export async function openDB() {
 
     req.onsuccess = (e) => {
       db = e.target.result;
-      resolve();
+      resolve(db);
     };
 
-    req.onerror = reject;
+    req.onerror = (e) => reject(e);
   });
 }
 
-export function getAllDecks() {
-  return new Promise((resolve) => {
+export async function getAllDecks() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
     const tx = db.transaction("decks", "readonly");
     const store = tx.objectStore("decks");
     const req = store.getAll();
     req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e);
   });
 }
 
-export function addDeck(deck) {
-  return new Promise((resolve) => {
-    const tx = db.transaction("decks", "readwrite");
-    tx.objectStore("decks").add(deck).onsuccess = resolve;
-  });
-}
-
-export function updateDeck(deck) {
-  return new Promise((resolve) => {
-    const tx = db.transaction("decks", "readwrite");
-    tx.objectStore("decks").put(deck).onsuccess = resolve;
-  });
-}
-
-export function getDeck(id) {
-  return new Promise((resolve) => {
+export async function getDeck(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
     const tx = db.transaction("decks", "readonly");
-    tx.objectStore("decks").get(Number(id)).onsuccess = (e) => resolve(e.target.result);
+    const store = tx.objectStore("decks");
+    const req = store.get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e);
+  });
+}
+
+export async function addDeck(deck) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("decks", "readwrite");
+    const store = tx.objectStore("decks");
+    const req = store.add(deck);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e);
+  });
+}
+
+export async function updateDeck(deck) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("decks", "readwrite");
+    const store = tx.objectStore("decks");
+    const req = store.put(deck);
+    req.onsuccess = () => resolve(true);
+    req.onerror = (e) => reject(e);
+  });
+}
+
+export async function deleteDeck(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("decks", "readwrite");
+    const store = tx.objectStore("decks");
+    const req = store.delete(id);
+    req.onsuccess = () => resolve(true);
+    req.onerror = (e) => reject(e);
   });
 }

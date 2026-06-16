@@ -1,90 +1,83 @@
-
+<!DOCTYPE html>
+<html lang="ja">
 <head>
-  <script type="module" src="../js/ua_deckedit.js"></script>
-  
+  <meta charset="UTF-8" />
+  <title>UA デッキ編集</title>
   <style>
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 90px);
-      gap: 10px;
-    }
-    .card-item {
-      text-align: center;
-      cursor: pointer;
-    }
-    .card-thumb {
-      width: 80px;
-      height: 110px;
-      background-size: cover;
-      border: 1px solid #333;
-      border-radius: 4px;
-    }
-    .deck-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-    .btn {
-      padding: 2px 6px;
-    }
+    body { font-family: sans-serif; margin: 20px; }
+    /* #layout { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 16px; margin-top: 16px; } */
+    /* #card-list, #deck-cards { height: 500px; overflow-y: auto; border: 1px solid #aaa; padding: 4px; } */
+    .card-item, .deck-card-item { display: flex; gap: 8px; padding: 4px; border-bottom: 1px solid #eee; align-items: center; cursor: pointer; }
+    .card-thumb { width: 50px; height: 70px; background-size: cover; background-position: center; border: 1px solid #333; }
+    /* #preview { border: 1px solid #aaa; width: 180px; height: 250px; background-size: cover; background-position: center; } */
+  
+  #layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1.6fr; /* ← プレビューを広く */
+    gap: 16px;
+    margin-top: 16px;
+  }
 
-#preview-area {
-  position: fixed;
-  right: 40px;
-  top: 120px;
-  width: 300px;
-  height: 450px;
-  border: 1px solid #333;
-  background: #fafafa;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
+  #card-list,
+  #deck-cards {
+    height: 500px;
+    overflow-y: auto;
+    border: 1px solid #aaa;
+    padding: 4px;
+    width: 100%;
+  }
 
-#preview-image {
-  width: 280px;
-  height: 420px;
-  background-size: cover;
-  background-position: center;
-  border-radius: 6px;
-  border: 1px solid #333;
-}
-
+  /* プレビューエリアを大きくする */
+  #preview {
+    border: 1px solid #aaa;
+    width: 100%;
+    height: 420px;              /* ← 大きくした */
+    background-size: contain;   /* ← カード全体が見える */
+    background-repeat: no-repeat;
+    background-position: center;
+  }
 
   </style>
 </head>
+<body>
+  <button onclick="location.href='index.html'">← メニューに戻る</button>
 
-<button onclick="location.href='index.html'">← メニューに戻る</button>
+  <h2>UA デッキ編集</h2>
 
-<h2>UA デッキ編集</h2>
+  <div>
+    <label>デッキ名：</label>
+    <input id="deck-name" type="text" />
+    <label>作品：</label>
+    <select id="work">
+      <option value="">すべて</option>
+    </select>
+  </div>
 
-<h3>保存済みデッキ</h3>
-<select id="saved-decks"></select>
-<button id="load-deck">読み込み</button>
+  <div>
+    <button id="save-deck">保存</button>
+    <button id="delete-deck">削除</button>
 
-<div>
-  <label>デッキ名：</label>
-  <input id="deck-name">
-</div>
+    <label>保存済みデッキ：</label>
+    <select id="saved-decks"></select>
+    <button id="load-deck">読み込み</button>
+  </div>
 
-<div>
-  <label>作品：</label>
-  <select id="work"></select>
-</div>
+  <div id="layout">
+    <div>
+      <h3>カード一覧（GAS）</h3>
+      <div id="card-list"></div>
+    </div>
+    <div>
+      <h3>デッキ内容</h3>
+      <div id="deck-cards"></div>
+    </div>
+    <div>
+      <h3>カード拡大表示</h3>
+      <div id="preview"></div>
+    </div>
+  </div>
 
-<h3>カード一覧</h3>
-<div id="card-list"></div>
-
-<h3>デッキ内容</h3>
-<div id="deck-cards"></div>
-
-<div>現在：<span id="deck-count">0 / 50</span></div>
-
-<button id="save">保存</button>
-
-<div id="preview-area">
-  <div id="preview-image"></div>
-</div>
+  <script type="module" src="../js/db.js"></script>
+  <script type="module" src="../js/ua_deckedit.js"></script>
+</body>
+</html>

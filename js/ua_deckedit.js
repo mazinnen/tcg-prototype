@@ -1,204 +1,210 @@
-import { openDB, addDeck, updateDeck, getAllDecks, getDeck } from "./db.js";
+import { openDB, addDeck, updateDeck, getAllDecks, getDeck, deleteDeck } from "./db.js";
 
-// Google Sheets → GAS の UA カード一覧 API
-const UA_CARD_API = "https://script.google.com/macros/s/AKfycbyEWHiA_TCbcZ4uVx3Jzx0LgMxGx1X_1com43ffOdFouqV20R0qQokaOcoygRz0XCdNyQ/exec";
+let deckCards = [];
+let editingDeckId = null;
+let titles = {};      // GAS の data.titles
+let filteredWork = "";
 
-let cardData = {};   // { title: [id, id, ...] }
-let deck = { name: "", work: "", cards: [] };
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyEWHiA_TCbcZ4uVx3Jzx0LgMxGx1X_1com43ffOdFouqV20R0qQokaOcoygRz0XCdNyQ/exec";
 
-window.addEventListener("DOMContentLoaded", async () => {
-  await openDB();
+// ---------- GAS からカード一覧取得 ----------
+async function loadTitles() {
+  const res = await fetch(GAS_URL);
+  const data = await res.json();
+  titles = data.titles || {};
+  renderWorkSelect();
+  renderCardList();
+}
 
-  const res = await fetch(UA_CARD_API);
-  const json = await res.json();
-  cardData = json.titles;
-
-  initWorkList();
-  initCardList();
-  initEvents();
-  updateCount();
-});
-
-// ===============================
-// UI 初期化
-// ===============================
-function initWorkList() {
+// ---------- 作品セレクト（GAS のキーそのまま） ----------
+function renderWorkSelect() {
   const sel = document.getElementById("work");
   sel.innerHTML = "";
 
-  Object.keys(cardData).forEach(title => {
+  const optAll = document.createElement("option");
+  optAll.value = "";
+  optAll.textContent = "すべて";
+  sel.appendChild(optAll);
+
+  Object.keys(titles).forEach(work => {
     const opt = document.createElement("option");
-    opt.value = title;
-    opt.textContent = title;
+    opt.value = work;
+    opt.textContent = work;
     sel.appendChild(opt);
   });
 }
 
-function initCardList() {
-  const work = document.getElementById("work").value;
-  const list = document.getElementById("card-list");
-  list.innerHTML = "";
-  list.className = "card-grid";
+// ---------- カード一覧表示 ----------
+function renderCardList() {
+  const zone = document.getElementById("card-list");
+  zone.innerHTML = "";
 
-  cardData[work].forEach(id => {
-    const div = document.createElement("div");
-    div.className = "card-item";
+  Object.keys(titles).forEach(work => {
+    if (filteredWork && filteredWork !== work) return;
 
-    div.innerHTML = `
-      <div class="card-thumb" style="background-image:url('../data/img/UA/${id}.png')"></div>
-      <div class="card-id">${id}</div>
-    `;
+    const title = document.createElement("div");
+    title.textContent = `【${work}】`;
+    title.style.fontWeight = "bold";
+    title.style.margin = "6px 0";
+    zone.appendChild(title);
 
-    div.onclick = () => addCard(id);
-    div.onmouseenter = () => showPreview(id);
+    titles[work].forEach(id => {
+      const row = document.createElement("div");
+      row.className = "card-item";
 
-    list.appendChild(div);
+      const thumb = document.createElement("div");
+      thumb.className = "card-thumb";
+      thumb.style.backgroundImage = `url('../data/img/UA/${id}.png')`;
+
+      const label = document.createElement("div");
+      label.textContent = id;
+
+      row.appendChild(thumb);
+      row.appendChild(label);
+
+      row.onclick = () => addCard(id);
+      row.onmouseenter = () => showPreview(id);
+
+      zone.appendChild(row);
+    });
   });
 }
 
-
-function initEvents() {
-  document.getElementById("work").addEventListener("change", () => {
-    initCardList();
-  });
-
-  document.getElementById("save").addEventListener("click", saveDeck);
-}
-
-// ===============================
-// デッキ操作
-// ===============================
+// ---------- デッキにカード追加 ----------
 function addCard(id) {
-  const found = deck.cards.find(c => c.id === id);
-
-  if (found) {
-    if (found.count >= 4) {
-      alert("同名カードは4枚までです");
-      return;
-    }
-    found.count++;
-  } else {
-    deck.cards.push({ id, count: 1 });
-  }
-
+  const found = deckCards.find(c => c.id === id);
+  if (found) found.count++;
+  else deckCards.push({ id, count: 1 });
   renderDeck();
-  updateCount();
 }
 
+// ---------- デッキ内容表示 ----------
 function renderDeck() {
-  const div = document.getElementById("deck-cards");
-  div.innerHTML = "";
+  const zone = document.getElementById("deck-cards");
+  zone.innerHTML = "";
 
-  deck.cards.forEach(c => {
+  deckCards.forEach(card => {
     const row = document.createElement("div");
-    row.className = "deck-row";
+    row.className = "deck-card-item";
 
-  row.innerHTML = `
-    <span class="deck-card" data-id="${c.id}">${c.id} × ${c.count}</span>
-    <button class="btn" data-id="${c.id}" data-act="plus">＋</button>
-    <button class="btn" data-id="${c.id}" data-act="minus">−</button>
-    <button class="btn" data-id="${c.id}" data-act="del">削除</button>
-  `;
-  
-  row.querySelector(".deck-card").onmouseenter = () => showPreview(c.id);
+    const thumb = document.createElement("div");
+    thumb.className = "card-thumb";
+    thumb.style.backgroundImage = `url('../data/img/UA/${card.id}.png')`;
+    thumb.onmouseenter = () => showPreview(card.id);
 
-    div.appendChild(row);
-  });
+    const label = document.createElement("div");
+    label.textContent = card.id;
 
-  // ボタンイベント
-  div.querySelectorAll(".btn").forEach(btn => {
-    btn.onclick = () => {
-      const id = btn.dataset.id;
-      const act = btn.dataset.act;
-      modifyCard(id, act);
+    const count = document.createElement("div");
+    count.textContent = `${card.count}枚`;
+
+    const minus = document.createElement("button");
+    minus.textContent = "-";
+    minus.onclick = () => {
+      card.count--;
+      if (card.count <= 0) {
+        deckCards = deckCards.filter(c => c !== card);
+      }
+      renderDeck();
     };
+
+    row.appendChild(thumb);
+    row.appendChild(label);
+    row.appendChild(count);
+    row.appendChild(minus);
+
+    zone.appendChild(row);
   });
 }
 
-function modifyCard(id, act) {
-  const c = deck.cards.find(x => x.id === id);
-  if (!c) return;
-
-  if (act === "plus") {
-    if (c.count >= 4) return;
-    c.count++;
-  }
-
-  if (act === "minus") {
-    c.count--;
-    if (c.count <= 0) {
-      deck.cards = deck.cards.filter(x => x.id !== id);
-    }
-  }
-
-  if (act === "del") {
-    deck.cards = deck.cards.filter(x => x.id !== id);
-  }
-
-  renderDeck();
-  updateCount();
-}
-
-// ===============================
-// 枚数表示
-// ===============================
-function updateCount() {
-  const total = deck.cards.reduce((sum, c) => sum + c.count, 0);
-  document.getElementById("deck-count").textContent = `${total} / 50`;
-}
-
-// ===============================
-// デッキ保存
-// ===============================
-async function saveDeck() {
-  const total = deck.cards.reduce((sum, c) => sum + c.count, 0);
-  if (total !== 50) {
-    alert("デッキは50枚ちょうどである必要があります");
-    return;
-  }
-
-  deck.name = document.getElementById("deck-name").value;
-  deck.work = document.getElementById("work").value;
-
-  if (!deck.name) {
-    alert("デッキ名を入力してください");
-    return;
-  }
-
-  await addDeck(deck);
-
-  const decks = await getAllDecks();
-  const last = decks[decks.length - 1];
-  localStorage.setItem("UA_LAST_DECK", last.id);
-
-  alert("デッキを保存しました");
-  location.href = "index.html";
-}
-
+// ---------- 拡大表示 ----------
 function showPreview(id) {
-  const preview = document.getElementById("preview-image");
-  preview.style.backgroundImage = `url('../data/img/UA/${id}.png')`;
+  const prev = document.getElementById("preview");
+  prev.style.backgroundImage = `url('../data/img/UA/${id}.png')`;
 }
 
+// ---------- 保存済みデッキ一覧 ----------
 async function loadSavedDecks() {
+  await openDB();
   const decks = await getAllDecks();
+
   const sel = document.getElementById("saved-decks");
   sel.innerHTML = "";
 
   decks.forEach(d => {
     const opt = document.createElement("option");
     opt.value = d.id;
-    opt.textContent = `${d.name}（${d.work}）`;
+    opt.textContent = d.name;
     sel.appendChild(opt);
   });
 }
 
+// ---------- デッキ保存 ----------
+document.getElementById("save-deck").onclick = async () => {
+  await openDB();
+
+  const name = document.getElementById("deck-name").value.trim();
+  const work = document.getElementById("work").value; // フィルタ中の作品をそのまま保存
+
+  if (!name) {
+    alert("デッキ名を入力してください");
+    return;
+  }
+
+  const deckData = { name, work, cards: deckCards };
+
+  if (editingDeckId) {
+    deckData.id = editingDeckId;
+    await updateDeck(deckData);
+  } else {
+    const newId = await addDeck(deckData);
+    editingDeckId = newId;
+  }
+
+  alert("保存しました");
+  loadSavedDecks();
+};
+
+// ---------- デッキ読み込み ----------
 document.getElementById("load-deck").onclick = async () => {
-  const id = document.getElementById("saved-decks").value;
+  const id = Number(document.getElementById("saved-decks").value);
   if (!id) return;
 
   const d = await getDeck(id);
-  deck = JSON.parse(JSON.stringify(d)); // deep copy
+  if (!d) return;
+
+  editingDeckId = id;
+  deckCards = JSON.parse(JSON.stringify(d.cards || []));
+
+  document.getElementById("deck-name").value = d.name || "";
+  document.getElementById("work").value = d.work || "";
+
+  filteredWork = d.work || "";
+  renderCardList();
   renderDeck();
-  updateCount();
 };
+
+// ---------- デッキ削除 ----------
+document.getElementById("delete-deck").onclick = async () => {
+  const id = Number(document.getElementById("saved-decks").value);
+  if (!id) return;
+  if (!confirm("本当に削除しますか？")) return;
+
+  await deleteDeck(id);
+  alert("削除しました");
+
+  editingDeckId = null;
+  deckCards = [];
+  renderDeck();
+  loadSavedDecks();
+};
+
+// ---------- 作品フィルタ ----------
+document.getElementById("work").onchange = () => {
+  filteredWork = document.getElementById("work").value;
+  renderCardList();
+};
+
+// ---------- 初期化 ----------
+loadTitles();
+loadSavedDecks();
