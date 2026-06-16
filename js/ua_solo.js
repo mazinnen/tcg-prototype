@@ -1,19 +1,8 @@
 import { createCard, makeDroppable, flipCard, renderStack, renderRow, getCardId } from "./ua_core.js";
 import { openDB, getAllDecks, getDeck } from "./db.js";
 
-let deck = []; // ← ここに展開後の50枚が入る
+let deck = [];
 
-// ====== デッキ（仮） ======
-// まずは動かすために固定デッキ
-const FIXED_DECK = [
-  "UA01-001","UA01-002","UA01-003","UA01-004",
-  "UA01-005","UA01-006","UA01-007","UA01-008",
-  "UA01-009","UA01-010","UA01-011","UA01-012",
-  "UA01-013","UA01-014","UA01-015","UA01-016",
-  "UA01-017","UA01-018","UA01-019","UA01-020"
-];
-
-// ====== 盤面 ======
 let deckStack = [];
 let hand = [];
 let front = [];
@@ -28,10 +17,15 @@ let dragFrom = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
   await openDB();
+  await loadDeckList();
+  setupDragEvents();
+});
 
-  // デッキ一覧を読み込む
+// ====== デッキ一覧をセレクトに反映 ======
+async function loadDeckList() {
   const decks = await getAllDecks();
   const sel = document.getElementById("deck-list");
+  sel.innerHTML = "";
 
   decks.forEach(d => {
     const opt = document.createElement("option");
@@ -39,17 +33,21 @@ window.addEventListener("DOMContentLoaded", async () => {
     opt.textContent = d.name;
     sel.appendChild(opt);
   });
+}
 
-  // デッキ読み込みボタン
-  document.getElementById("load-deck").onclick = async () => {
-    const id = sel.value;
-    const d = await getDeck(id);
+// ====== デッキ読み込みボタン ======
+document.getElementById("load-deck").onclick = async () => {
+  const id = document.getElementById("deck-list").value;
+  if (!id) return;
 
-    deck = expandDeck(d.cards); // ← ここで50枚に展開
-    setupBoard(deck);
-  };
-});
+  const d = await getDeck(Number(id));
+  if (!d || !d.cards) return;
 
+  deck = expandDeck(d.cards);   // {id,count} → [id,id,id,...]
+  setupBoard(deck);
+};
+
+// ====== デッキ展開 ======
 function expandDeck(cards) {
   const arr = [];
   cards.forEach(c => {
@@ -59,8 +57,8 @@ function expandDeck(cards) {
 }
 
 // ====== 初期セットアップ ======
-function setupBoard(deck) {
-  deckStack = [...deck];
+function setupBoard(srcDeck) {
+  deckStack = [...srcDeck];
 
   life = deckStack.splice(0, 7);
   renderStack("ua-life", life);
@@ -84,7 +82,7 @@ function setupBoard(deck) {
   renderStack("ua-remove", remove);
 }
 
-// ====== ドラッグ操作 ======
+// ====== ドラッグ操作（ua_core の getCardId 前提） ======
 function setupDragEvents() {
   document.addEventListener("mousedown", (e) => {
     const id = getCardId(e.target);
@@ -131,16 +129,13 @@ function zoneToArea(zoneId) {
   }[zoneId];
 }
 
-// ====== カード移動 ======
 function moveCard(id, from, to) {
   if (!from || !to) return;
-
   if (to === "front" && front.length >= 4) return;
   if (to === "energy" && energy.length >= 4) return;
 
   removeFrom(from, id);
   addTo(to, id);
-
   renderAll();
 }
 
@@ -166,93 +161,4 @@ function renderAll() {
   renderRow("energy-line", energy);
   renderStack("ua-out", out);
   renderStack("ua-remove", remove);
-}
-
-async function loadDeckList() {
-  const decks = await getAllDecks();
-  const sel = document.getElementById("deck-list");
-  sel.innerHTML = "";
-
-  decks.forEach(d => {
-    const opt = document.createElement("option");
-    opt.value = d.id;
-    opt.textContent = d.name;
-    sel.appendChild(opt);
-  });
-}
-
-document.getElementById("load-deck").onclick = async () => {
-  const id = document.getElementById("deck-list").value;
-  const d = await getDeck(id);
-  deck = expandDeck(d.cards);
-  setupBoard();
-};
-
-function makeDroppable(zone, handler) {
-  zone.addEventListener("dragover", e => e.preventDefault());
-  zone.addEventListener("drop", e => {
-    e.preventDefault();
-    handler(draggedCard, zone);
-  });
-}
-
-makeDroppable(frontLineZone, (card, zone) => {
-  if (zone.children.length >= 4) return; // 上限
-  zone.appendChild(card);
-  card.dataset.face = "front"; // フロントは表向き
-  updateCardImage(card);
-});
-
-makeDroppable(energyLineZone, (card, zone) => {
-  if (zone.children.length >= 4) return;
-  zone.appendChild(card);
-  card.dataset.face = "front";
-  updateCardImage(card);
-});
-
-lifeZone.addEventListener("click", e => {
-  if (!e.target.classList.contains("card")) return;
-  flipCard(e.target);
-});
-
-deckZone.addEventListener("contextmenu", e => {
-  e.preventDefault();
-
-  const n = parseInt(prompt("何枚見ますか？"), 10);
-  if (!n || n <= 0) return;
-
-  const peek = deck.slice(0, n);
-  showPeekDialog(peek);
-});
-
-function showPeekDialog(cards) {
-  const dlg = document.createElement("div");
-  dlg.className = "peek-dialog";
-
-  cards.forEach((id, i) => {
-    const card = createCard(id, "front");
-    card.onclick = () => movePeekCard(i, id, dlg);
-    dlg.appendChild(card);
-  });
-
-  document.body.appendChild(dlg);
-}
-
-function movePeekCard(index, id, dlg) {
-  const dest = prompt("移動先: top / bottom / hand / drop / out");
-
-  if (dest === "top") {
-    deck.unshift(id);
-  } else if (dest === "bottom") {
-    deck.push(id);
-  } else if (dest === "hand") {
-    hand.push(id);
-  } else if (dest === "drop") {
-    drop.push(id);
-  } else if (dest === "out") {
-    out.push(id);
-  }
-
-  dlg.remove();
-  renderAllZones();
 }
