@@ -14,7 +14,7 @@ window.dbDelete = dbDelete;
 window.dbGetAll = dbGetAll;
 
 // DB を開く
-export function openDB() {
+function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -42,7 +42,7 @@ export function openDB() {
 }
 
 // 汎用：取得
-export function dbGet(store, key) {
+function dbGet(store, key) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readonly");
     const req = tx.objectStore(store).get(key);
@@ -53,7 +53,7 @@ export function dbGet(store, key) {
 }
 
 // 汎用：保存
-export function dbPut(store, value, key) {
+function dbPut(store, value, key) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readwrite");
     tx.objectStore(store).put(value, key);

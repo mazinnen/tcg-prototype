@@ -1,0 +1,12 @@
+{
+  "name": "UAスターター",
+  "work": "HUNTER×HUNTER",
+  "cards": [
+    { "id": "UA01-001", "count": 4 },
+    { "id": "UA01-002", "count": 4 },
+    { "id": "UA01-003", "count": 4 },
+    { "id": "UA01-004", "count": 4 },
+    { "id": "UA01-005", "count": 4 },
+    { "id": "UA01-006", "count": 4 }
+  ]
+}
