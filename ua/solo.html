@@ -48,12 +48,11 @@
 
     /* ライフ：横に少しずつずらして7枚 */
     #ua-life {
-      height: 150px;
+      position: relative;
+      height: 120px; /* 適宜調整 */
     }
     #ua-life .card {
       position: absolute;
-      top: 0;
-      left: calc(var(--i) * 20px); /* JS 側で --i をセットする想定 */
     }
 
     /* フロントライン・エナジーライン：横並び */

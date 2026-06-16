@@ -3,8 +3,7 @@ export function createCard(id, face = "back") {
   card.classList.add("card");
   card.dataset.id = id;
   card.dataset.face = face;
-
-  card.draggable = true;
+  card.draggable = true; // ← これ必須
 
   updateCardImage(card);
   return card;
@@ -22,8 +21,7 @@ export function updateCardImage(card) {
 }
 
 export function flipCard(card) {
-  const face = card.dataset.face === "back" ? "front" : "back";
-  card.dataset.face = face;
+  card.dataset.face = card.dataset.face === "back" ? "front" : "back";
   updateCardImage(card);
 }
 

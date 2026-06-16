@@ -11,18 +11,17 @@ let ap = [];
 let out = [];
 let remove = [];
 
-let dragCard = null;
 let dragFrom = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
   await openDB();
   await loadDeckList();
-  setupDragEvents();
+  setupDragAndDrop();
   setupLifeFlip();
   setupDeckPeek();
 });
 
-// ====== デッキ一覧 ======
+// ===== デッキ一覧 =====
 async function loadDeckList() {
   const decks = await getAllDecks();
   const sel = document.getElementById("deck-list");
@@ -36,7 +35,7 @@ async function loadDeckList() {
   });
 }
 
-// ====== デッキ読み込み → ゲーム開始 ======
+// ===== デッキ読み込み =====
 document.getElementById("load-deck").onclick = async () => {
   const id = document.getElementById("deck-list").value;
   if (!id) return;
@@ -56,35 +55,18 @@ function expandDeck(cards) {
   return arr;
 }
 
-// ====== ゲーム開始処理 ======
+// ===== ゲーム開始（まずはマリガン無し） =====
 function startGame(srcDeck) {
   deckStack = [...srcDeck];
   shuffle(deckStack);
 
-  hand = deckStack.splice(0, 7);
-  ap = ["UA_BACK", "UA_BACK", "UA_BACK"];
-
+  hand = deckStack.splice(0, 7);          // 表
+  ap = ["UA_BACK", "UA_BACK", "UA_BACK"]; // 裏ダミー
   front = [];
   energy = [];
   out = [];
   remove = [];
-  life = [];
-
-  renderAll();
-
-  const doMulligan = confirm("マリガンしますか？");
-
-  if (!doMulligan) {
-    life = deckStack.splice(0, 7);
-  } else {
-    deckStack.push(...hand);
-    hand = [];
-
-    hand = deckStack.splice(0, 7);
-
-    shuffle(deckStack);
-    life = deckStack.splice(0, 7);
-  }
+  life = deckStack.splice(0, 7);          // 裏
 
   renderAll();
 }
@@ -96,9 +78,10 @@ function shuffle(arr) {
   }
 }
 
+// ===== 描画 =====
 function renderAll() {
   renderStack("ua-deck", deckStack, { face: "back" });
-  renderStack("ua-life", life, { face: "back" });
+  renderLifeRow();
   renderStack("ua-out", out, { face: "back" });
   renderStack("ua-remove", remove, { face: "back" });
 
@@ -109,25 +92,45 @@ function renderAll() {
   renderRow("ua-ap", ap, { face: "back" });
 }
 
-// ====== ドラッグ＆ドロップ ======
-function setupDragEvents() {
-  document.addEventListener("mousedown", (e) => {
+// ライフだけ横にずらして表示
+function renderLifeRow() {
+  const zone = document.getElementById("ua-life");
+  zone.innerHTML = "";
+  life.forEach((id, i) => {
+    const card = createCard(id, "back");
+    card.style.position = "absolute";
+    card.style.left = `${i * 20}px`;
+    zone.appendChild(card);
+  });
+}
+
+// ===== DnD（HTML5 drag & drop） =====
+function setupDragAndDrop() {
+  // カードからドラッグ開始
+  document.addEventListener("dragstart", e => {
     const id = getCardId(e.target);
     if (!id) return;
-    dragCard = id;
-    dragFrom = findArea(id);
+    const from = findArea(id);
+    if (!from) return;
+
+    dragFrom = from;
+    e.dataTransfer.setData("text/plain", id);
   });
 
-  document.addEventListener("mouseup", (e) => {
-    if (!dragCard) return;
-
-    const dropZone = getDropZone(e.target);
-    if (dropZone) moveCard(dragCard, dragFrom, dropZone);
-
-    dragCard = null;
-    dragFrom = null;
+  // 各ゾーンをドロップ可能に
+  ["ua-hand","front-line","energy-line","ua-out","ua-remove"].forEach(zoneId => {
+    const zone = document.getElementById(zoneId);
+    zone.addEventListener("dragover", e => e.preventDefault());
+    zone.addEventListener("drop", e => {
+      e.preventDefault();
+      const id = e.dataTransfer.getData("text/plain");
+      const to = zoneToArea(zoneId);
+      moveCard(id, dragFrom, to);
+      dragFrom = null;
+    });
   });
 
+  // カード上の右クリックで標準メニューを出さない
   document.addEventListener("contextmenu", e => {
     if (e.target.closest(".card")) e.preventDefault();
   });
@@ -140,14 +143,6 @@ function findArea(id) {
   if (out.includes(id)) return "out";
   if (remove.includes(id)) return "remove";
   if (life.includes(id)) return "life";
-  return null;
-}
-
-function getDropZone(el) {
-  const zones = ["ua-hand","front-line","energy-line","ua-out","ua-remove"];
-  for (const z of zones) {
-    if (el.closest(`#${z}`)) return zoneToArea(z);
-  }
   return null;
 }
 
@@ -186,7 +181,7 @@ function getAreaArray(area) {
   return { hand, front, energy, out, remove, life }[area];
 }
 
-// ====== ライフ反転 ======
+// ===== ライフ反転 =====
 function setupLifeFlip() {
   const lifeZone = document.getElementById("ua-life");
   lifeZone.addEventListener("click", e => {
@@ -196,7 +191,7 @@ function setupLifeFlip() {
   });
 }
 
-// ====== 山札 peek ======
+// ===== 山札 peek =====
 function setupDeckPeek() {
   const deckZone = document.getElementById("ua-deck");
   deckZone.addEventListener("contextmenu", e => {
@@ -212,17 +207,26 @@ function setupDeckPeek() {
 function showPeekDialog(cards) {
   const dlg = document.createElement("div");
   dlg.className = "peek-dialog";
+  dlg.style.position = "fixed";
+  dlg.style.left = "50%";
+  dlg.style.top = "50%";
+  dlg.style.transform = "translate(-50%, -50%)";
+  dlg.style.background = "#222";
+  dlg.style.padding = "8px";
+  dlg.style.zIndex = "9999";
+  dlg.style.display = "flex";
+  dlg.style.gap = "4px";
 
-  cards.forEach((id, i) => {
+  cards.forEach(id => {
     const card = createCard(id, "front");
-    card.onclick = () => movePeekCard(i, id, dlg);
+    card.onclick = () => movePeekCard(id, dlg);
     dlg.appendChild(card);
   });
 
   document.body.appendChild(dlg);
 }
 
-function movePeekCard(index, id, dlg) {
+function movePeekCard(id, dlg) {
   const dest = prompt("移動先: top / bottom / hand / out / remove");
 
   const idx = deckStack.indexOf(id);
