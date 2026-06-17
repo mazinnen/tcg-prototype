@@ -76,6 +76,7 @@ function addCard(id) {
   if (found) found.count++;
   else deckCards.push({ id, count: 1 });
   renderDeck();
+  updateDeckCount();
 }
 
 // ---------- デッキ内容表示 ----------
@@ -98,6 +99,17 @@ function renderDeck() {
     const count = document.createElement("div");
     count.textContent = `${card.count}枚`;
 
+    // ▼ 追加：＋ボタン
+    const plus = document.createElement("button");
+    plus.textContent = "+";
+    plus.onclick = () => {
+      if (card.count < 4) {        // 4枚制限
+        card.count++;
+        renderDeck();
+        updateDeckCount();
+      }
+    };
+
     const minus = document.createElement("button");
     minus.textContent = "-";
     minus.onclick = () => {
@@ -106,11 +118,13 @@ function renderDeck() {
         deckCards = deckCards.filter(c => c !== card);
       }
       renderDeck();
+      updateDeckCount();
     };
 
     row.appendChild(thumb);
     row.appendChild(label);
     row.appendChild(count);
+    row.appendChild(plus);   // ← 追加
     row.appendChild(minus);
 
     zone.appendChild(row);
@@ -208,3 +222,8 @@ document.getElementById("work").onchange = () => {
 // ---------- 初期化 ----------
 loadTitles();
 loadSavedDecks();
+
+function updateDeckCount() {
+  const total = deckCards.reduce((sum, c) => sum + c.count, 0);
+  document.getElementById("deck-count").textContent = `${total} / 50`;
+}
