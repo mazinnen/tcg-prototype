@@ -7,7 +7,7 @@ import {
   getCardUid
 } from "./ua_core.js";
 
-import { openDB, getAllDecks, getDeck } from "./db.js";
+import { openDB, getAllDecks, getDeck } from "../core/db.js";
 
 let deckStack = [];
 let hand = [];

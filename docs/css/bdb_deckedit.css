@@ -1,0 +1,142 @@
+/* ===============================
+   BDB デッキ編集 UI（最終版）
+   =============================== */
+
+/* 全体レイアウト */
+#editor {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  padding: 16px;
+  height: calc(100vh - 80px);
+  box-sizing: border-box;
+}
+
+/* 左パネル（カード検索） */
+#left-panel {
+  border: 1px solid #aaa;
+  padding: 12px;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+#left-panel h3 {
+  margin-top: 0;
+}
+
+#left-panel label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+#left-panel select {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+}
+
+/* カード一覧 */
+#card-list {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.card-row:hover {
+  background: #e8f0ff;
+}
+
+.card-row .thumb {
+  width: 48px;
+  height: 68px;
+  background-size: cover;
+  background-position: center;
+  margin-right: 8px;
+  border: 1px solid #999;
+}
+
+/* 右パネル（デッキ内容） */
+#right-panel {
+  border: 1px solid #aaa;
+  padding: 12px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+#right-panel h3 {
+  margin-top: 0;
+}
+
+#right-panel label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+#right-panel input,
+#right-panel select {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+}
+
+#right-panel button {
+  margin-top: 8px;
+  padding: 6px 12px;
+}
+
+/* デッキカード一覧 */
+#deck-cards {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.deck-row {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid #ccc;
+  background: #fdfdfd;
+}
+
+.deck-row .thumb {
+  width: 48px;
+  height: 68px;
+  background-size: cover;
+  background-position: center;
+  margin-right: 8px;
+  border: 1px solid #999;
+}
+
+.deck-row button {
+  margin-left: 8px;
+  padding: 4px 8px;
+}
+
+/* プレビュー */
+#preview {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 260px;
+  height: 380px;
+  border: 1px solid #aaa;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: white;
+}

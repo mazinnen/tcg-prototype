@@ -1,4 +1,4 @@
-import { openDB, addDeck, updateDeck, getAllDecks, getDeck, deleteDeck } from "./db.js";
+import { openDB, addDeck, updateDeck, getAllDecks, getDeck, deleteDeck } from "../core/db.js";
 
 let deckCards = [];
 let editingDeckId = null;
