@@ -75,16 +75,19 @@ function renderWorkSelect() {
 // ------------------------------
 // テリトリーセレクト
 // ------------------------------
-function renderTerritorySelect() {
+function renderTerritorySelect(work) {
   const sel = document.getElementById("territory-select");
   sel.innerHTML = "";
 
-  Object.keys(territories).forEach(work => {
-    territories[work].forEach(id => {
-      const opt = document.createElement("option");
-      opt.value = id;
-      opt.textContent = `${work} / ${id}`;
-      sel.appendChild(opt);
+  // ★ work が指定されている場合 → その作品だけ
+  const targetWorks = work ? [work] : Object.keys(territories);
+
+  targetWorks.forEach(w => {
+    territories[w].forEach(id => {
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = `${w} / ${id}`;
+    sel.appendChild(opt);
     });
   });
 }
@@ -122,6 +125,8 @@ function renderCardList() {
 
     zone.appendChild(row);
   });
+
+  renderTerritorySelect(work);
 }
 
 // ------------------------------
