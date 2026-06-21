@@ -18,7 +18,7 @@ let titles = {};
 let territories = {};
 let carddata = {};
 
-let deckCards = [];
+let deckCards = []; 
 let editingId = null;
 
 // ------------------------------
