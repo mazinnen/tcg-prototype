@@ -6,7 +6,8 @@ import {
   getAllCards,
   getDeckOrder,
   applyPeekOrder,
-  peekDeck
+  peekDeck,
+  shuffleDeck
 } from "../core/deck.js";
 import {
   createAllCards,
@@ -116,9 +117,12 @@ function doMulligan() {
   // 手札を山札の下へ
   handCards.forEach(card => {
     card.zone = "my-deck";
+    card.face = "back";
     applyPeekOrder([card.id], false); // 下に戻す
   });
 
+  shuffleDeck();
+  
   // DOM再生成
   createAllCards();
 

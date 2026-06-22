@@ -136,5 +136,6 @@ window.getAllCards = getAllCards;
 window.getDeckOrder = getDeckOrder;
 window.applyPeekOrder = applyPeekOrder;
 window.peekDeck = peekDeck;
+window.shuffleDeck = shuffleDeck;
 
-export { initDeckFromList, drawCard, getCardData, getAllCards, getDeckOrder, applyPeekOrder, peekDeck };
+export { initDeckFromList, drawCard, getCardData, getAllCards, getDeckOrder, applyPeekOrder, peekDeck, shuffleDeck };
